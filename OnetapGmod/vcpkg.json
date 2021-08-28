@@ -1,0 +1,7 @@
+{
+	"name" : "wittchen-gmod",
+	"version-string": "1.0",
+	"dependencies": [
+		"freetype"
+	]
+}
