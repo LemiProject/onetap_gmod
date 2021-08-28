@@ -35,6 +35,9 @@ std::string format_text_for_player(const std::string& str, c_base_player* ply) {
 		s = replace_all(s, "%name", ply->get_name());
 		s = replace_all(s, "%health", std::to_string(ply->get_health()));
 
+		s = replace_all(s, "%team_name", ply->get_team_name());
+		s = replace_all(s, "%user_group", ply->get_user_group());
+
 		return s;
 	}
 }

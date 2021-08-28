@@ -184,6 +184,15 @@ void Wittchen::InitializeEspStyleEditor() {
 	"%health", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
 	} });
 	
+	if (settings::get_bool("esp_player_info")) {
+		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
+			"%team_name", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
+		} });
+		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
+			"%user_group", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
+		} });
+
+	}
 }
 
 
@@ -201,13 +210,17 @@ void Wittchen::ApplyStyleToBox(esp::c_esp_box& box) {
 
 constexpr auto player_name = "voidptr_t";
 constexpr auto player_health = 100;
+constexpr auto team_name = "crime coder";
+constexpr auto user_group = "fanat";
 
 std::string formatPreviewText(const std::string& str) {
 	
 	std::string out = str;
 	out = replace_all(out, "%name", player_name);
 	out = replace_all(out, "%health", std::to_string(player_health));
-	
+	out = replace_all(out, "%team_name", team_name);
+	out = replace_all(out, "%user_group", user_group);
+
 	return out;
 }
 
