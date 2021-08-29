@@ -248,9 +248,9 @@ void hooks_manager::create_hook(void* target, void* detour, void** original) {
 
 
 long end_scene_hook::hook(IDirect3DDevice9* device) {
-	//std::cout << interfaces::global_vars->tickcount << std::endl;
 	input_system::process_binds();
-	const auto ret = original(device);;
+
+	const auto ret = original(device);
 	render_system::on_end_scene(device, (uintptr_t)_ReturnAddress());
 	return ret;
 }
