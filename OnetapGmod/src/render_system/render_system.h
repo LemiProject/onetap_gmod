@@ -5,7 +5,7 @@
 #include <d3d9.h>
 #include <functional>
 #include <imgui/im_tools.h>
-
+#include "../math/math.h"
 #include "color.h"
 
 namespace render_system {
@@ -46,9 +46,10 @@ namespace directx_render
 
 	void filled_rect(const ImVec2& min, const ImVec2& max, c_color color, float round = 0.f);
 	void bordered_rect(const ImVec2& min, const ImVec2& max, c_color color, float round = 0.f);
+	void bordered_rect1(math::box_t box, c_color color, float round = 0.f);
 	void line(const ImVec2& pos1, const ImVec2& pos2, c_color color, float t = 1.f);
 	void text(ImFont* font, const std::string& text, const ImVec2& pos, float size, c_color color, int flags);
-
+	void corner_box1(math::box_t box, c_color color);
 	void outlined_circle(const ImVec2& pos, int radius, c_color color, int segments = 120, int t = 1);
 	void filled_circle(const ImVec2& pos, int radius, c_color color, int segments = 120, int t = 1);
 

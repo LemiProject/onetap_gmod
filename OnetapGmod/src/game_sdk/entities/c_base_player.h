@@ -65,7 +65,7 @@ public:
 
 		return static_cast<int>(glua->get_number(-1));;
 	}
-
+	
 	std::string get_name() const
 	{
 		player_info_s info;

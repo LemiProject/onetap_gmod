@@ -109,16 +109,17 @@ bool get_target(target_t& target)
 	
 	for (auto i : game_utils::get_valid_players(false)) {
 		auto player = get_player_by_index(i);
+		if(player->is_player()) {
+			shoot_pos_t tmp_shoot_pos;
 
-		shoot_pos_t tmp_shoot_pos;
-		
-		if (!get_shoot_pos(tmp_shoot_pos, player))
-			continue;
-		
-		if (tmp_shoot_pos.fov < tmp.shoot_pos.fov && tmp_shoot_pos.fov <= (float)settings::get_int("aimbot_fov")) {
-			tmp.ply = player;
-			tmp.idx = i;
-			tmp.shoot_pos = tmp_shoot_pos;
+			if (!get_shoot_pos(tmp_shoot_pos, player))
+				continue;
+
+			if (tmp_shoot_pos.fov < tmp.shoot_pos.fov && tmp_shoot_pos.fov <= (float)settings::get_int("aimbot_fov")) {
+				tmp.ply = player;
+				tmp.idx = i;
+				tmp.shoot_pos = tmp_shoot_pos;
+			}
 		}
 	}
 

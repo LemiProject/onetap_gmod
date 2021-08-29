@@ -33,6 +33,7 @@ static inline std::map<std::string, std::vector<std::string>> entity_bones_by_cl
 class c_base_entity : public i_client_entity
 {
 public:
+	NETVAR("DT_BaseEntity", "m_CollisionGroup", m_rgflCoordinateFrame, matrix3x4_t);
 	NETVAR("DT_BaseEntity", "m_vecOrigin", get_origin, c_vector);
 	NETVAR("DT_GMOD_Player", "m_angEyeAngles[0]", get_angles, c_vector);
 	NETVAR("DT_BaseEntity", "m_nModelIndex", get_model_index, int);
@@ -52,7 +53,23 @@ public:
 		using original_fn = c_collidable * (__thiscall*)(void*);
 		return (*(original_fn**)this)[3](this);
 	}
+	std::string get_print_name()
+	{
+		auto glua = interfaces::lua_shared->get_lua_interface((int)e_special::glob);
+		if (!glua)
+			return {};
+		c_lua_auto_pop p(glua);
 
+		push_entity();
+		if (!glua->is_type(-1, (int)lua_object_type::ENTITY))
+			return get_classname();
+
+		glua->get_field(-1, "PrintName");
+		if (!glua->is_type(-1, (int)lua_object_type::STRING))
+			return get_classname();
+
+		return glua->get_string(-1);
+	}
 	bool is_alive()
 	{
 		using original_fn = bool(__fastcall*)(void*);

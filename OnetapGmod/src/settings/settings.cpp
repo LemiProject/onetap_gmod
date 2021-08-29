@@ -28,6 +28,7 @@ std::unordered_map<std::string, std::any> settings_storage {
 	{"esp_enable",false},
 	{"esp_info",false},
 	{"aimbot_fov", 180},
+	{"esp_dist", 20000.f},
 	{"aimbot_bones", (int)e_bones::head},
 	{"custom_viewmodel_fov", 0},
 	{"custom_fov", 0},
@@ -38,6 +39,62 @@ std::unordered_map<std::string, std::any> settings_storage {
 
 };
 
+void settings::c_entity_list::push_back(const std::string& c)
+{
+	//std::unique_lock<std::mutex> l(mutex);
+	if (!exist(c))
+		classes.push_back(c);
+}
+
+void settings::c_entity_list::remove(int idx)
+{
+	//std::unique_lock<std::mutex> l(mutex);
+	classes.erase(classes.begin() + idx);
+}
+
+bool settings::c_entity_list::exist(const std::string& c)
+{
+	//std::lock_guard<std::mutex> l(mutex);
+	return std::find(classes.begin(), classes.end(), c) != classes.end();
+}
+
+int settings::c_entity_list::find(const std::string& c)
+{
+	//std::lock_guard<std::mutex> l(mutex);
+	if (!classes.empty())
+		for (auto i = 0; i < classes.size(); ++i)
+			if (classes.at(i) == c)
+				return i;
+
+	return -1;
+}
+
+void settings::c_entity_list::exchange(const std::vector<std::string>& c)
+{
+	//std::unique_lock<std::mutex> l(mutex);
+	classes = c;
+}
+
+bool settings::c_entity_list::empty()
+{
+	//std::lock_guard<std::mutex> l(mutex);
+	return classes.empty();
+}
+
+void settings::c_entity_list::clear()
+{
+	classes.clear();
+}
+
+size_t settings::c_entity_list::size()
+{
+	return classes.size();
+}
+
+std::vector<std::string> settings::c_entity_list::data()
+{
+	return classes;
+}
 bool var_exist(var_id_t_non_copy name) {
 	return settings_storage.find(name) != settings_storage.end();
 }

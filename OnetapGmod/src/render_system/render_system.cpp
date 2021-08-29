@@ -59,7 +59,7 @@ void render_system::init() {
         ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(fontasw_compressed_data, fontasw_compressed_size, 14.0f, &icon_cfg, icon_ranges);
     	
         fonts::nunito_font[1] = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(nunito_font_compressed_data, nunito_font_compressed_size, 18.5f, &config, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
-        fonts::arial_font = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:/Windows/Fonts/Arial.ttf", 14.f, &config, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
+        fonts::arial_font = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:/Windows/Fonts/Arial.ttf", 16.f, &config, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
         fonts::nunito_font[2] = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(nunito_font_compressed_data, nunito_font_compressed_size, 34.5f, &config, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
         fonts::nunito_font[0] = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(nunito_font_compressed_data, nunito_font_compressed_size, 16.0f, &config, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
     	
@@ -186,7 +186,16 @@ void directx_render::bordered_rect(const ImVec2& min, const ImVec2& max, c_color
     call->rounding = round;
     draw_calls.push_back(call);
 }
-
+void directx_render::bordered_rect1(math::box_t box, c_color color, float round)
+{
+    auto call = std::make_shared<draw_types::rect_draw_type_t>();
+    call->color = color;
+    call->filled = false;
+    call->min = box.get_min().get_im_vec2();
+    call->max = box.get_max().get_im_vec2();
+    call->rounding = round;
+    draw_calls.push_back(call);
+}
 void directx_render::line(const ImVec2& pos1, const ImVec2& pos2, c_color color, float t)
 {
     auto call = std::make_shared<draw_types::line_draw_type_t>();
@@ -237,6 +246,50 @@ void directx_render::filled_circle(const ImVec2& pos, int radius, c_color color,
     draw_calls.push_back(call);
 }
 
+void directx_render::corner_box1(math::box_t box, c_color color)
+{
+    std::array<ImVec2, 4> points = {
+    box.get_min().get_im_vec2(),  ImVec2{box.x, box.y + box.h}, box.get_max().get_im_vec2(),  ImVec2{box.x + box.w, box.y}
+    };
+
+    auto draw_corner = [](const ImVec2& center, const ImVec2& add, c_color color)
+    {
+        math::vec2_t inline_padding = { add.x < 0 ? -1 : 1, add.y < 0 ? -1 : 1 };
+
+        line({ center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + add.x/* + inline_padding.x*/, center.y + inline_padding.y }, colors::black_color);
+        line({ center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + inline_padding.x, center.y + add.y/* + inline_padding.y */ }, colors::black_color);
+
+        inline_padding = { -inline_padding.x, -inline_padding.y };
+
+        line({ center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + add.x/* + inline_padding.x*/, center.y + inline_padding.y }, colors::black_color);
+        line({ center.x + inline_padding.x, center.y + inline_padding.y }, { center.x + inline_padding.x, center.y + add.y /*+ inline_padding.y */ }, colors::black_color);
+
+        line(center, { center.x + add.x, center.y }, color);
+        line(center, { center.x, center.y + add.y }, color);
+    };
+
+    const ImVec2 side_sizes = { box.w / 3.f, box.h / 3.f };
+
+    for (auto i = 0; i < points.size(); ++i)
+    {
+        auto point = points[i];
+        switch (i)
+        {
+        case 0:
+            draw_corner(point, side_sizes, color);
+            break;
+        case 1:
+            draw_corner(point, { side_sizes.x, -side_sizes.y }, color);
+            break;
+        case 2:
+            draw_corner(point, { -side_sizes.x, -side_sizes.y }, color);
+            break;
+        case 3:
+            draw_corner(point, { -side_sizes.x, side_sizes.y }, color);
+            break;
+        }
+    }
+}
 void directx_render::corner_box(const ImVec2& min, const ImVec2& max, c_color color)
 {
     std::array<ImVec2, 4> points = {

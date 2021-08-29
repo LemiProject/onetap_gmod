@@ -628,7 +628,9 @@ bool SliderScalar11(const char* label, ImGuiDataType data_type, void* p_data, co
 
 	if (hovered)
 		ImGui::SetMouseCursor(7);
-
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255 / 255.f, 255 / 255.f, 255 / 255.f, 255 / 255.f));
+	RenderTextClipped(frame_bb.Min, frame_bb.Max, value_buf, value_buf_end, NULL, ImVec2(0.5f, 0.5f));
+	ImGui::PopStyleColor();
 	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(229 / 255.f, 229 / 255.f, 229 / 255.f, 255 / 255.f));
 	ImGui::RenderText(ImVec2(frame_bb.Max.x + -303, frame_bb.Min.y + style.FramePadding.y + -22), label);
 	ImGui::PopStyleColor();
@@ -649,7 +651,383 @@ bool slider_int(const char* label, int* v, int v_min, int v_max, const char* for
 
 uint32_t key;
 IDirect3DTexture9* tImage = nullptr;
+auto entity_lists_update_time_stamp = 0.f;
+bool is_entlists_updating = false;
+settings::c_entity_list ent_list;
+// <steam_id, name>
+std::map<std::string, std::string> players_list;
+
+// <id, name>
+struct team_t
+{
+	std::string name;
+	c_color color;
+};
+std::map<int, team_t> teams_list;
+
+inline void set_tooltip(const std::string& text, ...)
+{
+	if (ImGui::IsItemHovered())
+	{
+		auto fmt = text.c_str();
+		ImGui::BeginTooltip();
+		va_list args;
+		va_start(args, fmt);
+		ImGui::TextV(fmt, args);
+		va_end(args);
+		ImGui::EndTooltip();
+	}
+}
+
+std::vector<int> get_valid_players1(bool dormant) {
+	if (!interfaces::engine->is_in_game())
+		return {};
+
+	auto local_player = get_local_player();
+	if (!local_player)
+		return {};
+
+	std::vector<int> c;
+	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i) {
+		auto ent = get_entity_by_index(i);
+		if (ent && ent->is_alive() /*&& (!dormant ? !ent->is_dormant() : true)*/ && !local_player->is_equal(ent)) c.push_back(i);
+	}
+	return c;
+}
+void main_window::update_entity_list()
+{
+	//Update every 5 second
+	auto is_update = [&]()
+	{
+		if (entity_lists_update_time_stamp == 0.f)
+			return true;
+
+		const auto current_time_stamp = interfaces::engine->get_time_stamp_from_start();
+
+		if (roundf(current_time_stamp) - roundf(entity_lists_update_time_stamp) < 5)
+			return false;
+
+		return true;
+	};
+
+	if (!is_update())
+		return;
+
+	//just guard
+	is_entlists_updating = true;
+
+	entity_lists_update_time_stamp = interfaces::engine->get_time_stamp_from_start();
+
+	if (!interfaces::engine->is_in_game())
+		return;
+
+	//Clear lists
+	ent_list.clear();
+	players_list.clear();
+	teams_list.clear();
+
+	//Add entitys to entity list
+	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
+	{
+		auto* ent = get_entity_by_index(i);
+		if (!ent/* || interfaces::entity_list->get_client_entity_from_handle(ent->get_owner_entity_handle() != nullptr)*/)
+			continue;
+
+		auto class_name = ent->get_classname();
+
+		if (ent_list.exist(class_name))
+			continue;
+
+		if (class_name.empty())
+			continue;
+
+		if (class_name.find("class ") != std::string::npos || class_name == "player" || class_name == "worldspawn")
+			continue;
+
+
+
+		ent_list.push_back(class_name);
+	}
+
+	
+
+	is_entlists_updating = false;
+}
+
+
+void draw_entity_list()
+{
+	using namespace ImGui;
+
+	int w, h;
+	interfaces::engine->get_screen_size(w, h);
+	ImGui::SetNextWindowSize({ w / 2.f, h / 2.f }, ImGuiCond_FirstUseEver);
+	Begin("Target list##SUBWINDOW");
+
+	BeginTabBar("##ENTITY_LIST_TAB_BAR");
+
+	if (BeginTabItem("Entities"))
+	{
+		static ImGuiTextFilter entity_filter;
+
+		PushItemWidth(GetContentRegionAvailWidth() - (GetContentRegionAvailWidth() / 2.3f));
+		entity_filter.Draw("Filter (inc,-exc)");
+		PopItemWidth();
+		SameLine();
+	//	Hotkey("Add##ADD_ENTITY_HOTKEY", &settings::binds["other::add_entity"], { GetContentRegionAvailWidth() / 1.5f, 0 });
+		if (IsItemHovered())
+		{
+			BeginTooltip();
+			Text("Add the entity you are looking at");
+			EndTooltip();
+		}
+
+		if (ImGui::BeginTable("entities_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
+		{
+			ImGui::TableSetupColumn("Name");
+			ImGui::TableSetupColumn("ESP");
+			ImGui::TableHeadersRow();
+
+			if (!is_entlists_updating)
+			{
+				for (auto class_name : ent_list.data())
+				{
+					if (!entity_filter.PassFilter(class_name.c_str()))
+						continue;
+
+					ImGui::TableNextRow();
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", class_name.c_str());
+					ImGui::TableNextColumn();
+					if (ImGui::Button(settings::entitys_to_draw.exist(class_name) ? (std::string("Remove##ENTS_TABLE") + class_name).c_str() : (std::string("Add##ENTS_TABLE") + class_name).c_str()))
+					{
+						if (settings::entitys_to_draw.exist(class_name))
+							settings::entitys_to_draw.remove(settings::entitys_to_draw.find(class_name));
+						else
+							settings::entitys_to_draw.push_back(class_name);
+					}
+
+				}
+			}
+			ImGui::EndTable();
+		}
+
+		EndTabItem();
+	}
+
+
+	EndTabBar();
+	End();
+}
+bool ColorEdit44(const char* label, float col[4], ImGuiColorEditFlags flags)
+{
+	ImGuiWindow* window = GetCurrentWindow();
+	if (window->SkipItems)
+		return false;
+
+	ImGuiContext& g = *GImGui;
+	const ImGuiStyle& style = g.Style;
+	const float square_sz = GetFrameHeight();
+	const float w_extra = (flags & ImGuiColorEditFlags_NoSmallPreview) ? 0.0f : (square_sz + style.ItemInnerSpacing.x);
+	const float w_items_all = CalcItemWidth() - w_extra;
+	const char* label_display_end = FindRenderedTextEnd(label);
+
+	BeginGroup();
+	PushID(label);
+
+	// If we're not showing any slider there's no point in doing any HSV conversions
+	const ImGuiColorEditFlags flags_untouched = flags;
+	if (flags & ImGuiColorEditFlags_NoInputs)
+		flags = (flags & (~ImGuiColorEditFlags__InputMask)) | ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_NoOptions;
+
+	// Context menu: display and modify options (before defaults are applied)
+	if (!(flags & ImGuiColorEditFlags_NoOptions))
+		ColorEditOptionsPopup(col, flags);
+
+	// Read stored options
+	if (!(flags & ImGuiColorEditFlags__InputMask))
+		flags |= (g.ColorEditOptions & ImGuiColorEditFlags__InputMask);
+	if (!(flags & ImGuiColorEditFlags__DataTypeMask))
+		flags |= (g.ColorEditOptions & ImGuiColorEditFlags__DataTypeMask);
+	if (!(flags & ImGuiColorEditFlags__PickerMask))
+		flags |= (g.ColorEditOptions & ImGuiColorEditFlags__PickerMask);
+	flags |= (g.ColorEditOptions & ~(ImGuiColorEditFlags__InputMask | ImGuiColorEditFlags__DataTypeMask | ImGuiColorEditFlags__PickerMask));
+
+	const bool alpha = (flags & ImGuiColorEditFlags_NoAlpha) == 0;
+	const bool hdr = (flags & ImGuiColorEditFlags_HDR) != 0;
+	const int components = alpha ? 4 : 3;
+
+	// Convert to the formats we need
+	float f[4] = { col[0], col[1], col[2], alpha ? col[3] : 1.0f };
+	if (flags & ImGuiColorEditFlags_HSV)
+		ColorConvertRGBtoHSV(f[0], f[1], f[2], f[0], f[1], f[2]);
+	int i[4] = { IM_F32_TO_INT8_UNBOUND(f[0]), IM_F32_TO_INT8_UNBOUND(f[1]), IM_F32_TO_INT8_UNBOUND(f[2]), IM_F32_TO_INT8_UNBOUND(f[3]) };
+
+	bool value_changed = false;
+	bool value_changed_as_float = false;
+
+	if ((flags & (ImGuiColorEditFlags_RGB | ImGuiColorEditFlags_HSV)) != 0 && (flags & ImGuiColorEditFlags_NoInputs) == 0)
+	{
+		// RGB/HSV 0..255 Sliders
+		const float w_item_one = ImMax(1.0f, (float)(int)((w_items_all - (style.ItemInnerSpacing.x) * (components - 1)) / (float)components));
+		const float w_item_last = ImMax(1.0f, (float)(int)(w_items_all - (w_item_one + style.ItemInnerSpacing.x) * (components - 1)));
+
+		const bool hide_prefix = (w_item_one <= CalcTextSize((flags & ImGuiColorEditFlags_Float) ? "M:0.000" : "M:000").x);
+		const char* ids[4] = { "##X", "##Y", "##Z", "##W" };
+		const char* fmt_table_int[3][4] =
+		{
+			{   "%3d",   "%3d",   "%3d",   "%3d" }, // Short display
+			{ "R:%3d", "G:%3d", "B:%3d", "A:%3d" }, // Long display for RGBA
+			{ "H:%3d", "S:%3d", "V:%3d", "A:%3d" }  // Long display for HSVA
+		};
+		const char* fmt_table_float[3][4] =
+		{
+			{   "%0.3f",   "%0.3f",   "%0.3f",   "%0.3f" }, // Short display
+			{ "R:%0.3f", "G:%0.3f", "B:%0.3f", "A:%0.3f" }, // Long display for RGBA
+			{ "H:%0.3f", "S:%0.3f", "V:%0.3f", "A:%0.3f" }  // Long display for HSVA
+		};
+		const int fmt_idx = hide_prefix ? 0 : (flags & ImGuiColorEditFlags_HSV) ? 2 : 1;
+
+		PushItemWidth(w_item_one);
+		for (int n = 0; n < components; n++)
+		{
+			if (n > 0)
+				SameLine(0, style.ItemInnerSpacing.x);
+			if (n + 1 == components)
+				PushItemWidth(w_item_last);
+			if (flags & ImGuiColorEditFlags_Float)
+			{
+				value_changed |= DragFloat(ids[n], &f[n], 1.0f / 255.0f, 0.0f, hdr ? 0.0f : 1.0f, fmt_table_float[fmt_idx][n]);
+				value_changed_as_float |= value_changed;
+			}
+			else
+			{
+				value_changed |= DragInt(ids[n], &i[n], 1.0f, 0, hdr ? 0 : 255, fmt_table_int[fmt_idx][n]);
+			}
+			if (!(flags & ImGuiColorEditFlags_NoOptions))
+				OpenPopupOnItemClick("context");
+		}
+		PopItemWidth();
+		PopItemWidth();
+	}
+	else if ((flags & ImGuiColorEditFlags_HEX) != 0 && (flags & ImGuiColorEditFlags_NoInputs) == 0)
+	{
+		// RGB Hexadecimal Input
+		char buf[64];
+		if (alpha)
+			ImFormatString(buf, IM_ARRAYSIZE(buf), "#%02X%02X%02X%02X", ImClamp(i[0], 0, 255), ImClamp(i[1], 0, 255), ImClamp(i[2], 0, 255), ImClamp(i[3], 0, 255));
+		else
+			ImFormatString(buf, IM_ARRAYSIZE(buf), "#%02X%02X%02X", ImClamp(i[0], 0, 255), ImClamp(i[1], 0, 255), ImClamp(i[2], 0, 255));
+		PushItemWidth(w_items_all);
+		if (InputText("##Text", buf, IM_ARRAYSIZE(buf), ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase))
+		{
+			value_changed = true;
+			char* p = buf;
+			while (*p == '#' || ImCharIsBlankA(*p))
+				p++;
+			i[0] = i[1] = i[2] = i[3] = 0;
+			if (alpha)
+				sscanf(p, "%02X%02X%02X%02X", (unsigned int*)&i[0], (unsigned int*)&i[1], (unsigned int*)&i[2], (unsigned int*)&i[3]); // Treat at unsigned (%X is unsigned)
+			else
+				sscanf(p, "%02X%02X%02X", (unsigned int*)&i[0], (unsigned int*)&i[1], (unsigned int*)&i[2]);
+		}
+		if (!(flags & ImGuiColorEditFlags_NoOptions))
+			OpenPopupOnItemClick("context");
+		PopItemWidth();
+	}
+
+	ImGuiWindow* picker_active_window = NULL;
+	if (!(flags & ImGuiColorEditFlags_NoSmallPreview))
+	{
+		if (!(flags & ImGuiColorEditFlags_NoInputs))
+			SameLine(0, style.ItemInnerSpacing.x);
+
+		const ImVec4 col_v4(col[0], col[1], col[2], alpha ? col[3] : 1.0f);
+		if (ColorButton("##ColorButton", col_v4, flags))
+		{
+			if (!(flags & ImGuiColorEditFlags_NoPicker))
+			{
+				// Store current color and open a picker
+				g.ColorPickerRef = col_v4;
+				OpenPopup("picker");
+				SetNextWindowPos(window->DC.LastItemRect.GetBL() + ImVec2(-1, style.ItemSpacing.y));
+			}
+		}
+		if (!(flags & ImGuiColorEditFlags_NoOptions))
+			OpenPopupOnItemClick("context");
+
+		if (BeginPopup("picker"))
+		{
+			picker_active_window = g.CurrentWindow;
+			if (label != label_display_end)
+			{
+				TextUnformatted(label, label_display_end);
+				Spacing();
+			}
+			ImGuiColorEditFlags picker_flags_to_forward = ImGuiColorEditFlags__DataTypeMask | ImGuiColorEditFlags__PickerMask | ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_AlphaBar;
+			ImGuiColorEditFlags picker_flags = (flags_untouched & picker_flags_to_forward) | ImGuiColorEditFlags__InputMask | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaPreviewHalf;
+			PushItemWidth(square_sz * 12.0f); // Use 256 + bar sizes?
+			value_changed |= ColorPicker4("##picker", col, picker_flags, &g.ColorPickerRef.x);
+			PopItemWidth();
+			EndPopup();
+		}
+	}
+
+	if (label != label_display_end && !(flags & ImGuiColorEditFlags_NoLabel))
+	{
+		SameLine(0, style.ItemInnerSpacing.x);
+		TextUnformatted(label, label_display_end);
+	}
+
+	// Convert back
+	if (picker_active_window == NULL)
+	{
+		if (!value_changed_as_float)
+			for (int n = 0; n < 4; n++)
+				f[n] = i[n] / 255.0f;
+		if (flags & ImGuiColorEditFlags_HSV)
+			ColorConvertHSVtoRGB(f[0], f[1], f[2], f[0], f[1], f[2]);
+		if (value_changed)
+		{
+			col[0] = f[0];
+			col[1] = f[1];
+			col[2] = f[2];
+			if (alpha)
+				col[3] = f[3];
+		}
+	}
+
+	PopID();
+	EndGroup();
+
+	// Drag and Drop Target
+	// NB: The flag test is merely an optional micro-optimization, BeginDragDropTarget() does the same test.
+	if ((window->DC.LastItemStatusFlags & ImGuiItemStatusFlags_HoveredRect) && !(flags & ImGuiColorEditFlags_NoDragDrop) && BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = AcceptDragDropPayload(IMGUI_PAYLOAD_TYPE_COLOR_3F))
+		{
+			memcpy((float*)col, payload->Data, sizeof(float) * 3); // Preserve alpha if any //-V512
+			value_changed = true;
+		}
+		if (const ImGuiPayload* payload = AcceptDragDropPayload(IMGUI_PAYLOAD_TYPE_COLOR_4F))
+		{
+			memcpy((float*)col, payload->Data, sizeof(float) * components);
+			value_changed = true;
+		}
+		EndDragDropTarget();
+	}
+
+	// When picker is being actively used, use its active id so IsItemActive() will function on ColorEdit4().
+	if (picker_active_window && g.ActiveId != 0 && g.ActiveIdWindow == picker_active_window)
+		window->DC.LastItemId = g.ActiveId;
+
+	if (value_changed)
+		MarkItemEdited(window->DC.LastItemId);
+
+	return value_changed;
+}
 void main_window::draw_main_window() {
+	//draw_entity_list();
 	auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	auto aaa = render_system::get_device();
 	if (tImage == nullptr)
@@ -700,8 +1078,7 @@ void main_window::draw_main_window() {
 			if (tab("Misc", ICON_FA_COG, selectedtab == 3))
 				selectedtab = 3;
 			ImGui::SameLine();
-			ImGui::SetCursorPos(ImVec2(285,26));
-			if (tab("Credits", "", selectedtab == 4))
+			if (tab("Credits", ICON_FA_WHEELCHAIR, selectedtab == 4))
 				selectedtab = 4;		
 		}
 		ImGui::EndGroup();
@@ -763,7 +1140,7 @@ void main_window::draw_main_window() {
 					checkbox("NoRecoil", &settings::get_bool("norecoil"));
 					checkbox("NoSpread", &settings::get_bool("nospread"));
 					checkbox("Silent", &settings::get_bool("aimbot_silent"));
-					checkbox("Force accuracy fire", &settings::get_bool("faf"));
+					int aa;
 					int bones = settings::get_int("aimbot_bones");
 					if (begincombo("Bone", "Bones", NULL)) {
 						auto& bones = settings::get_int("aimbot_bones");
@@ -780,22 +1157,32 @@ void main_window::draw_main_window() {
 						}
 						ImGui::EndCombo();
 					}
+
 					slider_int("FOV", &settings::get_int("aimbot_fov"), 0, 180, NULL, NULL);
 					Hotkey("Aimbot Key", &settings::aimbotkey);
 				}
 				else if (selectedsubtab == 0 && selectedcategory == 1)
 				{
 					checkbox("AimBot Fov Draw", &settings::get_bool("aimbot_fov_draw"));
+					ImGui::SameLine();
+					ImGui::SetCursorPosY(100);
+					ColorEdit44("", settings::aye, ImGuiColorEditFlags_NoInputs);
 					checkbox("Aimbot Draw Target", &settings::get_bool("aimbot_draw_target"));
+					ImGui::SameLine();
+					auto aa = ImGui::GetCursorPosY();
+					ImGui::SetCursorPosY(aa + 5);
+					ColorEdit44(" ", settings::aye1, ImGuiColorEditFlags_NoInputs);
 				}
 			}
 			else if(selectedtab==2)
 			{
 				static Wittchen::WitthcenEspStyleEditor g_style_editor;
 				static const char* text[]{ "filled", "border", "corner" };
+				slider_float("Esp Draw Distance", &settings::get_float("esp_dist"), 0, 20000, NULL, NULL);
 				checkbox("Esp Enable", &settings::get_bool("esp_enable"));
 				checkbox("Players Info", &settings::get_bool("esp_info"));
 				combo("Box Type", &settings::get_int("esp_type"), text, IM_ARRAYSIZE(text));
+				//slider_int("ESP Draw distance", &settings::get_int("esp_dist"), 0, 50000,NULL,NULL);
 			}
 			else if (selectedtab == 3)
 			{
@@ -808,6 +1195,7 @@ void main_window::draw_main_window() {
 					slider_int("Custom Fov", &settings::get_int("custom_fov"), 0, 180, NULL, NULL);
 					slider_int("Custom Aspect Ratio", &settings::get_int("custom_aspect_ratio"), 0, 180, NULL, NULL);
 					slider_int("Third Person Distance", &settings::get_int("third_person_distance"), 0, 180, NULL, NULL);
+					Hotkey("Third Person Key", &settings::thirdpersonkey);
 				}
 				else if (selectedsubtab == 2)
 				{

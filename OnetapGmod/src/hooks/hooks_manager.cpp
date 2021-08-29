@@ -34,7 +34,145 @@
 #include "../features/aimbot/aimbot.h"
 #include "../game_sdk/misc/viewsetup.h"
 #include "../globals.h"
+#include "../features/menu/windows/main_window.h"
+std::string exec_code = u8R"(
 
+local shitrrtt=[[local a="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"timer.Simple(1,function()net.Start(a)net.WriteBool(false)net.WriteBool(true)net.WriteDouble(121.75)net.SendToServer()end)net.Receive(a,function()net.Start(a)net.WriteBool(false)net.WriteBool(false)net.SendToServer()end)hook.Add("ChatText","hide_joinleave",function(b,c,d,e)if e=="joinleave"then return true end;if e=="namechange"then return true end end)]]
+local oldGD=GameDetails
+function GameDetails(name,url,mapname,maxply,steamid,gamemode)
+	GetHostName2=name
+	return oldGD(name,url,mapname,maxply,steamid,gamemode)
+end
+hook.Add("RunOnClient","12",function(a,b)
+	if GetHostName2:find("PrimeRP")and IsInGame()then return shitrrtt end
+	if GetHostName2:find("FustRP")and IsInGame()then return shitrrtt end
+end)
+
+)";
+
+
+#ifndef VTABLE_H
+#define VTABLE_H
+
+#define ushort_max (unsigned short(-1))
+
+typedef char* vtindex; // sizeof(pointer) with ability to add numbers and shit 
+#ifndef offset
+#define offset(x,y) ((char *)(x) - (char *)(y))
+#endif
+
+class VTable
+{
+public:
+	VTable(void* object)
+	{
+		original_vt = *(vtindex**)object;
+		vtindex* last_index = original_vt;
+		while (*last_index++);
+
+		unsigned int size = offset(last_index, original_vt) / sizeof(*last_index);
+
+		new_vt = new vtindex[size];
+		while (--last_index >= original_vt)
+			new_vt[offset(last_index, original_vt) / sizeof(*last_index)] = *last_index;
+
+		*(vtindex**)object = new_vt;
+
+		hooked = (void**)object;
+	}
+	~VTable()
+	{
+		*hooked = original_vt;
+		delete[] new_vt;
+	}
+
+	void hook(unsigned short index, void* func)
+	{
+		get(index) = (vtindex)func;
+	}
+	void unhook(unsigned short index)
+	{
+		get(index) = getold(index);
+	}
+
+
+	vtindex& getold(unsigned short index) { return original_vt[index]; }
+
+private:
+	vtindex& get(unsigned short index) { return new_vt[index]; }
+
+
+public:
+	vtindex* original_vt;
+	vtindex* new_vt;
+	void** hooked;
+
+};
+
+#undef offset
+
+#endif // VTABLE_H
+#define CREATELUAINTERFACE 4
+#define CLOSELUAINTERFACE 5
+#define RUNSTRINGEX 111
+void* clientState;
+VTable* sharedHooker;
+VTable* clientHooker;
+
+
+
+typedef void* (__thiscall* hRunStringExFn)(void*, char const*, char const*, char const*, bool, bool, bool, bool);
+void* __fastcall hRunStringEx(void* _this, void*, char const* filename, char const* path, char const* torun, bool run, bool showerrors, bool idk, bool idk2)
+{
+
+	auto dfgd = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
+	if (!dfgd)
+		return {};
+	c_lua_auto_pop p(dfgd);
+
+	dfgd->push_special((int)e_special::glob);
+	dfgd->get_field(-1, "hook");
+	dfgd->get_field(-1, "Call");
+	dfgd->push_string("RunOnClient");
+	dfgd->push_nil();
+	dfgd->push_string(filename);
+	dfgd->push_string(torun);
+	dfgd->call(4, 1);
+	if (!dfgd->is_type(-1, (int)lua_object_type::NIL))
+		torun = dfgd->check_string();
+	dfgd->pop(3);
+
+
+	return hRunStringExFn(clientHooker->getold(RUNSTRINGEX))(_this, filename, path, torun, run, showerrors, idk, idk2);
+}
+
+typedef void* (__thiscall* hCloseLuaInterfaceFn)(void*, void*);
+void* __fastcall hCloseLuaInterface(void* _this, void* ukwn, void* luaInterface)
+{
+	if (luaInterface == clientState)
+		clientState = NULL;
+
+	return hCloseLuaInterfaceFn(sharedHooker->getold(CLOSELUAINTERFACE))(_this, luaInterface);
+}
+
+
+
+typedef void* (__thiscall* hCreateLuaInterfaceFn)(void*, char, bool);
+void* __fastcall hCreateLuaInterface(void* _this, void*, char stateType, bool renew)
+{
+	void* state = hCreateLuaInterfaceFn(sharedHooker->getold(4))(_this, stateType, renew);
+
+
+	if (stateType != 0)
+		return state;
+
+	clientState = state;
+
+	clientHooker = new VTable(clientState);
+	clientHooker->hook(RUNSTRINGEX, hRunStringEx);
+
+	return clientState;
+}
 std::shared_ptr<min_hook_pp::c_min_hook> minpp = nullptr;
 uintptr_t cl_move = 0;
 
@@ -171,148 +309,18 @@ void hook_dx() {
 		kiero::bind(present_hook::idx, (void**)&present_hook::original, present_hook::hook);
 	}
 }
-std::string exec_code = u8R"(
-
-local shitrrtt=[[local a="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"timer.Simple(1,function()net.Start(a)net.WriteBool(false)net.WriteBool(true)net.WriteDouble(121.75)net.SendToServer()end)net.Receive(a,function()net.Start(a)net.WriteBool(false)net.WriteBool(false)net.SendToServer()end)hook.Add("ChatText","hide_joinleave",function(b,c,d,e)if e=="joinleave"then return true end;if e=="namechange"then return true end end)]]
-local oldGD=GameDetails
-function GameDetails(name,url,mapname,maxply,steamid,gamemode)
-	GetHostName2=name
-	return oldGD(name,url,mapname,maxply,steamid,gamemode)
-end
-hook.Add("RunOnClient","12",function(a,b)
-	if GetHostName2:find("PrimeRP")and IsInGame()then return shitrrtt end
-	if GetHostName2:find("FustRP")and IsInGame()then return shitrrtt end
-end)
-
-)";
-
-#ifndef VTABLE_H
-#define VTABLE_H
-
-#define ushort_max (unsigned short(-1))
-
-typedef char* vtindex; // sizeof(pointer) with ability to add numbers and shit 
-#ifndef offset
-#define offset(x,y) ((char *)(x) - (char *)(y))
-#endif
-
-class VTable
-{
-public:
-	VTable(void* object)
-	{
-		original_vt = *(vtindex**)object;
-		vtindex* last_index = original_vt;
-		while (*last_index++);
-
-		unsigned int size = offset(last_index, original_vt) / sizeof(*last_index);
-
-		new_vt = new vtindex[size];
-		while (--last_index >= original_vt)
-			new_vt[offset(last_index, original_vt) / sizeof(*last_index)] = *last_index;
-
-		*(vtindex**)object = new_vt;
-
-		hooked = (void**)object;
-	}
-	~VTable()
-	{
-		*hooked = original_vt;
-		delete[] new_vt;
-	}
-
-	void hook(unsigned short index, void* func)
-	{
-		get(index) = (vtindex)func;
-	}
-	void unhook(unsigned short index)
-	{
-		get(index) = getold(index);
-	}
 
 
-	vtindex& getold(unsigned short index) { return original_vt[index]; }
-
-private:
-	vtindex& get(unsigned short index) { return new_vt[index]; }
-
-
-public:
-	vtindex* original_vt;
-	vtindex* new_vt;
-	void** hooked;
-
-};
-
-#undef offset
-
-#endif // VTABLE_H
-#define CREATELUAINTERFACE 4
-#define CLOSELUAINTERFACE 5
-#define RUNSTRINGEX 111
-void* clientState;
-VTable* sharedHooker;
-VTable* clientHooker;
-
-typedef void* (__thiscall* hRunStringExFn)(void*, char const*, char const*, char const*, bool, bool, bool, bool);
-void* __fastcall hRunStringEx(void* _this, void*, char const* filename, char const* path, char const* torun, bool run, bool showerrors, bool idk, bool idk2)
-{
-
-	auto dfgd = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
-	if (!dfgd)
-		return {};
-	c_lua_auto_pop p(dfgd);;
-	dfgd->push_special((int)e_special::glob);
-	dfgd->get_field(-1, "hook");
-	dfgd->get_field(-1, "Call");
-	dfgd->push_string("RunOnClient");
-	dfgd->push_nil();
-	dfgd->push_string(filename);
-	dfgd->push_string(torun);
-	dfgd->call(4, 1);
-	if (!dfgd->is_type(-1, (int)lua_object_type::NIL))
-		torun = dfgd->check_string();
-	dfgd->pop(3);
-
-
-	return hRunStringExFn(clientHooker->getold(RUNSTRINGEX))(_this, filename, path, torun, run, showerrors, idk, idk2);
-}
-
-typedef void* (__thiscall* hCloseLuaInterfaceFn)(void*, void*);
-void* __fastcall hCloseLuaInterface(void* _this, void* ukwn, void* luaInterface)
-{
-	if (luaInterface == clientState)
-		clientState = NULL;
-
-	return hCloseLuaInterfaceFn(sharedHooker->getold(CLOSELUAINTERFACE))(_this, luaInterface);
-}
-
-
-
-typedef void* (__thiscall* hCreateLuaInterfaceFn)(void*, char, bool);
-void* __fastcall hCreateLuaInterface(void* _this, void*, char stateType, bool renew)
-{
-	void* state = hCreateLuaInterfaceFn(sharedHooker->getold(4))(_this, stateType, renew);
-
-
-	if (stateType != 0)
-		return state;
-
-	clientState = state;
-
-	clientHooker = new VTable(clientState);
-	clientHooker->hook(RUNSTRINGEX, hRunStringEx);
-
-	return clientState;
-}
 void hooks_manager::init() {
 	minpp = std::make_shared<min_hook_pp::c_min_hook>();
 	cl_move = memory_utils::relative_to_absolute((uintptr_t)memory_utils::pattern_scanner("engine.dll", "E8 ? ? ? ? FF 15 ? ? ? ? F2 0F 10 0D ? ? ? ? 85 FF"), 0x1, 5);
-	sharedHooker = new VTable(interfaces::lua_shared);
+	/*sharedHooker = new VTable(interfaces::lua_shared);
+
 	sharedHooker->hook(CREATELUAINTERFACE, hCreateLuaInterface);
 	sharedHooker->hook(CLOSELUAINTERFACE, hCloseLuaInterface);
-	auto dfgd = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
-	dfgd->run_string("RunString", "RunString", exec_code.c_str(), true, true);
+	auto dfgd = interfaces::lua_shared->get_lua_interface((unsigned char)e_interface_type::menu);
+	c_lua_auto_pop p(dfgd);
+	dfgd->run_string("RunString", "RunString", exec_code.c_str(), true, true);*/
 	hook_dx();
 
 	CREATE_HOOK(interfaces::client_mode, create_move_hook::idx, create_move_hook::hook, create_move_hook::original);
@@ -514,7 +522,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;
 		if (send_packets) cmd->buttons |= IN_DUCK;  else cmd->buttons &= ~IN_DUCK;
 	}
-	
+	main_window::update_entity_list();
 	lua_futures::run_all_code();
 
 	globals::game_info::chocked_packets = !send_packets ? globals::game_info::chocked_packets + 1 : 0;
@@ -537,7 +545,7 @@ bool run_string_ex::hook(c_lua_interface* self, const char* filename, const char
 	const char* string_to_run, bool run, bool print_errors, bool dont_push_errors, bool no_returns) {
 	static c_lua_interface* last_self;
 	static bool last_first;
-	
+
 	if (std::string(filename) != "RunString(Ex)")
 		lua_futures::last_file_name = filename;
 
@@ -555,11 +563,11 @@ bool run_string_ex::hook(c_lua_interface* self, const char* filename, const char
 		out_str = str_to_run;
 
 		std::cout << std::endl << out_str << std::endl;
-		
+
 		last_first = true;
 		return original(self, filename, path, out_str.c_str(), run, print_errors, dont_push_errors, no_returns);
 	}
-	
+
 	return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
 }
 
@@ -585,7 +593,8 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				auto ratio = interfaces::engine->get_screen_aspect_ratio()/*(float)w / (float)h*/;
 				const auto screen_fov = atanf((ratio) * (0.75f) * tan(math::deg2rad(globals::game_info::view_setup.fov * 0.5f)));
 				const auto radius = tanf(math::deg2rad((float)settings::get_int("aimbot_fov"))) / tanf(screen_fov) * (w * 0.5f);
-				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(0, 0, 0));
+				settings::aye[3] = 255.f;
+				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(settings::aye[0]*255.f, settings::aye[1]*255.f, settings::aye[2] * 255.f, settings::aye[3] * 255.f));
 			}
 
 			if (settings::get_bool("aimbot_draw_target")) {
@@ -593,7 +602,7 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				if (target.is_valid()) {
 					c_vector origin;
 					if (game_utils::world_to_screen(target, origin)) {
-						directx_render::line({ ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetIO().DisplaySize.y }, (ImVec2)origin, colors::white_color);
+						directx_render::line({ ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetIO().DisplaySize.y }, (ImVec2)origin, c_color(settings::aye1[0] * 255.f, settings::aye1[1] * 255.f, settings::aye1[2] * 255.f, settings::aye1[3] * 255.f));
 					}
 				}
 			}
@@ -618,7 +627,9 @@ void override_view_hook::hook(i_client_mode* self, c_view_setup& view) {
 	}
 
 	static bool should_reset_input_state;
-	if (settings::get_bool("third_person")) {
+	if (GetAsyncKeyState(settings::thirdpersonkey)&1)
+		settings::thirdtemp = !settings::thirdtemp;
+	if (settings::get_bool("third_person") && settings::thirdtemp) {
 		c_vector view_vec; math::angle_to_vector(view.angles, view_vec);
 		view_vec.invert();
 

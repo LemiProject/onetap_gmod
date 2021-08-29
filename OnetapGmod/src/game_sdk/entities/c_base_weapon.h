@@ -60,8 +60,8 @@ public:
 		return r;
 	}
 };
-
-/*__forceinline c_base_combat_weapon* get_primary_weapon(c_base_player* ply)
-{
-	return static_cast<c_base_combat_weapon*>(interfaces::entity_list->get_client_entity_from_handle(ply->active_weapon_handle()));
-}*/
+//
+//__forceinline c_base_combat_weapon* get_primary_weapon(c_base_player* ply)
+//{
+//	return static_cast<c_base_combat_weapon*>(interfaces::entity_list->get_client_entity_from_handle(ply->active_weapon_handle()));
+//}

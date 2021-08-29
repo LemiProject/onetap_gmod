@@ -158,7 +158,7 @@ c_color Wittchen::WitthcenEspStyleEditor::GetAutoColor(const std::string& name, 
 		float g = 255 * (player->get_health_procentage() / 100.f);
 		return { 255 - g, g, 0 };
 	}
-	if (name == "%name") {
+	if (name == "%team_name") {
 		return player->get_team_color();
 	}
 	
@@ -186,11 +186,14 @@ void Wittchen::InitializeEspStyleEditor() {
 		"%health", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
 		} });
 		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
-			"%team_name", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
+			"%team_name", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::top
 		} });
 		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
-			"%user_group", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
+			"%user_group", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::top
 		} });
+		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
+		"%activeweapon", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::top
+	} });
 
 	
 }
