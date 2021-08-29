@@ -51,128 +51,6 @@ end)
 )";
 
 
-#ifndef VTABLE_H
-#define VTABLE_H
-
-#define ushort_max (unsigned short(-1))
-
-typedef char* vtindex; // sizeof(pointer) with ability to add numbers and shit 
-#ifndef offset
-#define offset(x,y) ((char *)(x) - (char *)(y))
-#endif
-
-class VTable
-{
-public:
-	VTable(void* object)
-	{
-		original_vt = *(vtindex**)object;
-		vtindex* last_index = original_vt;
-		while (*last_index++);
-
-		unsigned int size = offset(last_index, original_vt) / sizeof(*last_index);
-
-		new_vt = new vtindex[size];
-		while (--last_index >= original_vt)
-			new_vt[offset(last_index, original_vt) / sizeof(*last_index)] = *last_index;
-
-		*(vtindex**)object = new_vt;
-
-		hooked = (void**)object;
-	}
-	~VTable()
-	{
-		*hooked = original_vt;
-		delete[] new_vt;
-	}
-
-	void hook(unsigned short index, void* func)
-	{
-		get(index) = (vtindex)func;
-	}
-	void unhook(unsigned short index)
-	{
-		get(index) = getold(index);
-	}
-
-
-	vtindex& getold(unsigned short index) { return original_vt[index]; }
-
-private:
-	vtindex& get(unsigned short index) { return new_vt[index]; }
-
-
-public:
-	vtindex* original_vt;
-	vtindex* new_vt;
-	void** hooked;
-
-};
-
-#undef offset
-
-#endif // VTABLE_H
-#define CREATELUAINTERFACE 4
-#define CLOSELUAINTERFACE 5
-#define RUNSTRINGEX 111
-void* clientState;
-VTable* sharedHooker;
-VTable* clientHooker;
-
-
-
-typedef void* (__thiscall* hRunStringExFn)(void*, char const*, char const*, char const*, bool, bool, bool, bool);
-void* __fastcall hRunStringEx(void* _this, void*, char const* filename, char const* path, char const* torun, bool run, bool showerrors, bool idk, bool idk2)
-{
-
-	auto dfgd = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
-	if (!dfgd)
-		return {};
-	c_lua_auto_pop p(dfgd);
-
-	dfgd->push_special((int)e_special::glob);
-	dfgd->get_field(-1, "hook");
-	dfgd->get_field(-1, "Call");
-	dfgd->push_string("RunOnClient");
-	dfgd->push_nil();
-	dfgd->push_string(filename);
-	dfgd->push_string(torun);
-	dfgd->call(4, 1);
-	if (!dfgd->is_type(-1, (int)lua_object_type::NIL))
-		torun = dfgd->check_string();
-	dfgd->pop(3);
-
-
-	return hRunStringExFn(clientHooker->getold(RUNSTRINGEX))(_this, filename, path, torun, run, showerrors, idk, idk2);
-}
-
-typedef void* (__thiscall* hCloseLuaInterfaceFn)(void*, void*);
-void* __fastcall hCloseLuaInterface(void* _this, void* ukwn, void* luaInterface)
-{
-	if (luaInterface == clientState)
-		clientState = NULL;
-
-	return hCloseLuaInterfaceFn(sharedHooker->getold(CLOSELUAINTERFACE))(_this, luaInterface);
-}
-
-
-
-typedef void* (__thiscall* hCreateLuaInterfaceFn)(void*, char, bool);
-void* __fastcall hCreateLuaInterface(void* _this, void*, char stateType, bool renew)
-{
-	void* state = hCreateLuaInterfaceFn(sharedHooker->getold(4))(_this, stateType, renew);
-
-
-	if (stateType != 0)
-		return state;
-
-	clientState = state;
-
-	clientHooker = new VTable(clientState);
-	clientHooker->hook(RUNSTRINGEX, hRunStringEx);
-
-	return clientState;
-}
 std::shared_ptr<min_hook_pp::c_min_hook> minpp = nullptr;
 uintptr_t cl_move = 0;
 
@@ -310,17 +188,17 @@ void hook_dx() {
 	}
 }
 
+void post_hook_init() {
+	if (auto i = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu); i)
+		i->run_string("RunString", "RunString", exec_code.c_str(), true, true);
+	else
+		throw std::exception("Failed to initialize bypass");
+}
 
 void hooks_manager::init() {
 	minpp = std::make_shared<min_hook_pp::c_min_hook>();
 	cl_move = memory_utils::relative_to_absolute((uintptr_t)memory_utils::pattern_scanner("engine.dll", "E8 ? ? ? ? FF 15 ? ? ? ? F2 0F 10 0D ? ? ? ? 85 FF"), 0x1, 5);
-	/*sharedHooker = new VTable(interfaces::lua_shared);
 
-	sharedHooker->hook(CREATELUAINTERFACE, hCreateLuaInterface);
-	sharedHooker->hook(CLOSELUAINTERFACE, hCloseLuaInterface);
-	auto dfgd = interfaces::lua_shared->get_lua_interface((unsigned char)e_interface_type::menu);
-	c_lua_auto_pop p(dfgd);
-	dfgd->run_string("RunString", "RunString", exec_code.c_str(), true, true);*/
 	hook_dx();
 
 	CREATE_HOOK(interfaces::client_mode, create_move_hook::idx, create_move_hook::hook, create_move_hook::original);
@@ -344,6 +222,8 @@ void hooks_manager::init() {
 		game_hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wndproc_hook::hooked_wndproc)));
 	
 	minpp->enable_hook();
+
+	post_hook_init();
 }
 
 void hooks_manager::shutdown() {
@@ -491,18 +371,22 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 		VirtualProtect(send_packets_ptr, sizeof(bool), PAGE_EXECUTE_READWRITE, &sp_protection);
 	}
 	
-	if (!cmd || !cmd->command_number || !interfaces::engine->is_in_game()) return original(self, frame_time, cmd);
+	if (!cmd || !cmd->command_number || !interfaces::engine->is_in_game()) 
+		return original(self, frame_time, cmd);
+
 	bool& send_packets = *send_packets_ptr;
-	send_packets = (cmd->buttons & IN_ATTACK) || (globals::game_info::chocked_packets > 21) ? true : send_packets;
+	send_packets = (globals::game_info::chocked_packets > 21) ? true : send_packets;
+
 	auto lp = get_local_player();
 	if (!lp || !lp->is_alive()) return original(self, frame_time, cmd);
 
 	
-	if (settings::get_bool("bhop") && !(lp->get_flags() & (1 << 0))) {
+	if (settings::get_bool("bhop") && !(lp->get_flags() & (1 << 0)))
 		bhop();
-	}
+
 	if (settings::get_bool("autostrafe"))
 		autosrafe();
+
 	if (aimbot::start_prediction(*cmd)) {
 		aimbot::run_aimbot(*cmd);
 
@@ -525,6 +409,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	main_window::update_entity_list();
 	lua_futures::run_all_code();
 
+	send_packets = (cmd->buttons & IN_ATTACK) ? true : send_packets;
 	globals::game_info::chocked_packets = !send_packets ? globals::game_info::chocked_packets + 1 : 0;
 	
 	return false;
@@ -546,6 +431,7 @@ bool run_string_ex::hook(c_lua_interface* self, const char* filename, const char
 	static c_lua_interface* last_self;
 	static bool last_first;
 
+	bool is_client = self == interfaces::lua_shared->get_lua_interface((int)e_interface_type::client);
 	if (std::string(filename) != "RunString(Ex)")
 		lua_futures::last_file_name = filename;
 
@@ -553,19 +439,30 @@ bool run_string_ex::hook(c_lua_interface* self, const char* filename, const char
 	if (self != last_self && interfaces::engine->is_drawing_loading_image())
 		is_first = true;
 	last_self = self;
-	if (is_first) std::cout << filename << std::endl;
 
-	if (is_first) {
-		std::string out_str;
-		auto str_to_run = std::string(string_to_run);
-		str_to_run += u8"\n";
-		str_to_run += lua_futures::bypass;
-		out_str = str_to_run;
+	#if defined(_DEBUG)
+		if (is_first) std::cout << filename << std::endl;
+	#endif
 
-		std::cout << std::endl << out_str << std::endl;
+	if (is_client) {
+		std::string torun;
+		auto menu_interface = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
+		if (!menu_interface)
+			return {};
 
-		last_first = true;
-		return original(self, filename, path, out_str.c_str(), run, print_errors, dont_push_errors, no_returns);
+		menu_interface->push_special((int)e_special::glob);
+		menu_interface->get_field(-1, "hook");
+		menu_interface->get_field(-1, "Call");
+		menu_interface->push_string("RunOnClient");
+		menu_interface->push_nil();
+		menu_interface->push_string(filename);
+		menu_interface->push_string(string_to_run);
+		menu_interface->call(4, 1);
+		if (!menu_interface->is_type(-1, (int)lua_object_type::NIL))
+			torun = menu_interface->check_string();
+		menu_interface->pop(3);
+
+		return original(self, filename, path, torun.c_str(), run, print_errors, dont_push_errors, no_returns);
 	}
 
 	return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
