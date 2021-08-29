@@ -253,10 +253,65 @@ public:
 void* clientState;
 VTable* sharedHooker;
 VTable* clientHooker;
+
+typedef void* (__thiscall* hRunStringExFn)(void*, char const*, char const*, char const*, bool, bool, bool, bool);
+void* __fastcall hRunStringEx(void* _this, void*, char const* filename, char const* path, char const* torun, bool run, bool showerrors, bool idk, bool idk2)
+{
+
+	auto dfgd = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
+	if (!dfgd)
+		return {};
+	c_lua_auto_pop p(dfgd);;
+	dfgd->push_special((int)e_special::glob);
+	dfgd->get_field(-1, "hook");
+	dfgd->get_field(-1, "Call");
+	dfgd->push_string("RunOnClient");
+	dfgd->push_nil();
+	dfgd->push_string(filename);
+	dfgd->push_string(torun);
+	dfgd->call(4, 1);
+	if (!dfgd->is_type(-1, (int)lua_object_type::NIL))
+		torun = dfgd->check_string();
+	dfgd->pop(3);
+
+
+	return hRunStringExFn(clientHooker->getold(RUNSTRINGEX))(_this, filename, path, torun, run, showerrors, idk, idk2);
+}
+
+typedef void* (__thiscall* hCloseLuaInterfaceFn)(void*, void*);
+void* __fastcall hCloseLuaInterface(void* _this, void* ukwn, void* luaInterface)
+{
+	if (luaInterface == clientState)
+		clientState = NULL;
+
+	return hCloseLuaInterfaceFn(sharedHooker->getold(CLOSELUAINTERFACE))(_this, luaInterface);
+}
+
+
+
+typedef void* (__thiscall* hCreateLuaInterfaceFn)(void*, char, bool);
+void* __fastcall hCreateLuaInterface(void* _this, void*, char stateType, bool renew)
+{
+	void* state = hCreateLuaInterfaceFn(sharedHooker->getold(4))(_this, stateType, renew);
+
+
+	if (stateType != 0)
+		return state;
+
+	clientState = state;
+
+	clientHooker = new VTable(clientState);
+	clientHooker->hook(RUNSTRINGEX, hRunStringEx);
+
+	return clientState;
+}
 void hooks_manager::init() {
 	minpp = std::make_shared<min_hook_pp::c_min_hook>();
 	cl_move = memory_utils::relative_to_absolute((uintptr_t)memory_utils::pattern_scanner("engine.dll", "E8 ? ? ? ? FF 15 ? ? ? ? F2 0F 10 0D ? ? ? ? 85 FF"), 0x1, 5);
-	auto dfgd = interfaces::lua_shared->get_lua_interface(2);
+	sharedHooker = new VTable(interfaces::lua_shared);
+	sharedHooker->hook(CREATELUAINTERFACE, hCreateLuaInterface);
+	sharedHooker->hook(CLOSELUAINTERFACE, hCloseLuaInterface);
+	auto dfgd = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
 	dfgd->run_string("RunString", "RunString", exec_code.c_str(), true, true);
 	hook_dx();
 
@@ -429,12 +484,11 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	}
 	
 	if (!cmd || !cmd->command_number || !interfaces::engine->is_in_game()) return original(self, frame_time, cmd);
-	
+	bool& send_packets = *send_packets_ptr;
 	send_packets = (cmd->buttons & IN_ATTACK) || (globals::game_info::chocked_packets > 21) ? true : send_packets;
 	auto lp = get_local_player();
 	if (!lp || !lp->is_alive()) return original(self, frame_time, cmd);
 
-	bool& send_packets = *send_packets_ptr;
 	
 	if (settings::get_bool("bhop") && !(lp->get_flags() & (1 << 0))) {
 		bhop();

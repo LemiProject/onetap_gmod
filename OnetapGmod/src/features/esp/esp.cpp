@@ -32,6 +32,7 @@ std::string format_text_for_player(const std::string& str, c_base_player* ply) {
 	auto s = str;
 	if (settings::get_bool("esp_info"))
 	{
+	
 		s = replace_all(s, "%name", ply->get_name());
 		s = replace_all(s, "%health", std::to_string(ply->get_health()));
 

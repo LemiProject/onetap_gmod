@@ -701,7 +701,7 @@ void main_window::draw_main_window() {
 				selectedtab = 3;
 			ImGui::SameLine();
 			ImGui::SetCursorPos(ImVec2(285,26));
-			if (tab("Credits", "", selectedtab == 3))
+			if (tab("Credits", "", selectedtab == 4))
 				selectedtab = 4;		
 		}
 		ImGui::EndGroup();

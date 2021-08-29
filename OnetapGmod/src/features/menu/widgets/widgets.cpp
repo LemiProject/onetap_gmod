@@ -177,14 +177,14 @@ void Wittchen::InitializeEspStyleEditor() {
 	g_style_editor.temp_box.color = colors::white_color;
 	g_style_editor.temp_box.border_color = colors::black_color;
 	
-	g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
+	
+	
+		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
 		"%name", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::top
 	} });
-	g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
-	"%health", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
-	} });
-	
-	if (settings::get_bool("esp_player_info")) {
+		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
+		"%health", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
+		} });
 		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
 			"%team_name", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
 		} });
@@ -192,7 +192,7 @@ void Wittchen::InitializeEspStyleEditor() {
 			"%user_group", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
 		} });
 
-	}
+	
 }
 
 
