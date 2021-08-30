@@ -50,6 +50,7 @@ end)
 
 )";
 
+
 std::shared_ptr<min_hook_pp::c_min_hook> minpp = nullptr;
 uintptr_t cl_move = 0;
 
@@ -190,6 +191,8 @@ void hook_dx() {
 void post_hook_init() {
 	if (auto i = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu); i)
 		i->run_string("RunString", "RunString", exec_code.c_str(), true, true);
+	else
+		throw std::exception("Failed to initialize bypass");
 }
 
 void hooks_manager::init() {
@@ -204,20 +207,20 @@ void hooks_manager::init() {
 	CREATE_HOOK(interfaces::prediction, run_command_hook::idx, run_command_hook::hook, run_command_hook::original);
 	CREATE_HOOK(interfaces::engine, get_aspect_ration_hook::idx, get_aspect_ration_hook::hook, get_aspect_ration_hook::original);
 	CREATE_HOOK(interfaces::mat_render_context, read_pixels_hook::idx, read_pixels_hook::hook, read_pixels_hook::original);
-
+	
 	create_hook((void*)memory_utils::pattern_scanner("client.dll", "40 55 53 57 48 8D 6C 24 ? 48 81 EC ? ? ? ? 48 8B DA"), override_view_hook::hook, (void**)(&override_view_hook::original));
 	create_hook((void*)cl_move, cl_move_hook::hook, (void**)(&cl_move_hook::original));
 	create_hook((void*)memory_utils::pattern_scanner("client.dll", "40 53 48 83 EC 20 E8 ? ? ? ? 48 8B 0D ? ? ? ?"), get_viewmodel_fov::hook, (void**)(&get_viewmodel_fov::original));
 	create_hook((void*)memory_utils::pattern_scanner("client.dll", "40 57 48 83 EC 20 83 7A 08 00"), view_render_hook::hook, (void**)(&view_render_hook::original));
-
+	
 	if (const auto run_string_ex_fn_ptr = reinterpret_cast<run_string_ex::fn>(memory_utils::pattern_scanner(
 		"lua_shared.dll", "40 55 53 56 57 41 54 41 56 41 57 48 8D AC 24 ? ? ? ? 48 81 EC ? ? ? ? 48 8B 05 ? ? ? ? 48 33 C4 48 89 85 ? ? ? ? 49 8B F1")); run_string_ex_fn_ptr)
 		create_hook(run_string_ex_fn_ptr, run_string_ex::hook, reinterpret_cast<void**>(&run_string_ex::original));
-
+	
 	auto* const game_hwnd = FindWindowW(0, L"Garry's Mod (x64)");
 	wndproc_hook::original_wndproc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
 		game_hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wndproc_hook::hooked_wndproc)));
-
+	
 	minpp->enable_hook();
 
 	post_hook_init();
@@ -245,9 +248,9 @@ void hooks_manager::create_hook(void* target, void* detour, void** original) {
 
 
 long end_scene_hook::hook(IDirect3DDevice9* device) {
-	//std::cout << interfaces::global_vars->tickcount << std::endl;
 	input_system::process_binds();
-	const auto ret = original(device);;
+
+	const auto ret = original(device);
 	render_system::on_end_scene(device, (uintptr_t)_ReturnAddress());
 	return ret;
 }
@@ -368,18 +371,22 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 		VirtualProtect(send_packets_ptr, sizeof(bool), PAGE_EXECUTE_READWRITE, &sp_protection);
 	}
 	
-	if (!cmd || !cmd->command_number || !interfaces::engine->is_in_game()) return original(self, frame_time, cmd);
+	if (!cmd || !cmd->command_number || !interfaces::engine->is_in_game()) 
+		return original(self, frame_time, cmd);
+
 	bool& send_packets = *send_packets_ptr;
-	send_packets = (cmd->buttons & IN_ATTACK) || (globals::game_info::chocked_packets > 21) ? true : send_packets;
+	send_packets = (globals::game_info::chocked_packets > 21) ? true : send_packets;
+
 	auto lp = get_local_player();
 	if (!lp || !lp->is_alive()) return original(self, frame_time, cmd);
 
 	
-	if (settings::get_bool("bhop") && !(lp->get_flags() & (1 << 0))) {
+	if (settings::get_bool("bhop") && !(lp->get_flags() & (1 << 0)))
 		bhop();
-	}
+
 	if (settings::get_bool("autostrafe"))
 		autosrafe();
+
 	if (aimbot::start_prediction(*cmd)) {
 		aimbot::run_aimbot(*cmd);
 
@@ -395,13 +402,14 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	original(interfaces::client_mode, frame_time, cmd);
 	
 	if (settings::get_bool("fake_lags")) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
-	if (settings::get_bool("fake_duck") && GetAsyncKeyState(globals::fakelagkey)) {
+	if (settings::get_bool("fake_duck") && GetAsyncKeyState(settings::fakelagkey)) {
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;
 		if (send_packets) cmd->buttons |= IN_DUCK;  else cmd->buttons &= ~IN_DUCK;
 	}
 	main_window::update_entity_list();
 	lua_futures::run_all_code();
-	 
+
+	send_packets = (cmd->buttons & IN_ATTACK) ? true : send_packets;
 	globals::game_info::chocked_packets = !send_packets ? globals::game_info::chocked_packets + 1 : 0;
 	
 	return false;
@@ -417,6 +425,7 @@ void lock_cursor_hook::hook(i_surface* self) {
 	}
 	original(self);
 }
+
 bool run_string_ex::hook(c_lua_interface* self, const char* filename, const char* path,
 	const char* string_to_run, bool run, bool print_errors, bool dont_push_errors, bool no_returns) {
 	static c_lua_interface* last_self;
@@ -431,14 +440,15 @@ bool run_string_ex::hook(c_lua_interface* self, const char* filename, const char
 		is_first = true;
 	last_self = self;
 
-#if defined(_DEBUG)
-	if (is_first) std::cout << filename << std::endl;
-#endif
+	#if defined(_DEBUG)
+		if (is_first) std::cout << filename << std::endl;
+	#endif
 
 	if (is_client) {
-		std::string torun= string_to_run;
+		std::string torun;
 		auto menu_interface = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
-	
+		if (!menu_interface)
+			return {};
 
 		menu_interface->push_special((int)e_special::glob);
 		menu_interface->get_field(-1, "hook");
@@ -457,6 +467,7 @@ bool run_string_ex::hook(c_lua_interface* self, const char* filename, const char
 
 	return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
 }
+
 void run_command_hook::hook(i_prediction* pred, c_base_entity* player, c_user_cmd* ucmd, i_move_helper* move_helper) {
 	q_angle va;
 	interfaces::engine->get_view_angles(va);
@@ -479,8 +490,8 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				auto ratio = interfaces::engine->get_screen_aspect_ratio()/*(float)w / (float)h*/;
 				const auto screen_fov = atanf((ratio) * (0.75f) * tan(math::deg2rad(globals::game_info::view_setup.fov * 0.5f)));
 				const auto radius = tanf(math::deg2rad((float)settings::get_int("aimbot_fov"))) / tanf(screen_fov) * (w * 0.5f);
-				globals::aye[3] = 255.f;
-				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(globals::aye[0]*255.f, globals::aye[1]*255.f, globals::aye[2] * 255.f, globals::aye[3] * 255.f));
+				settings::aye[3] = 255.f;
+				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(settings::aye[0]*255.f, settings::aye[1]*255.f, settings::aye[2] * 255.f, settings::aye[3] * 255.f));
 			}
 
 			if (settings::get_bool("aimbot_draw_target")) {
@@ -488,7 +499,7 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				if (target.is_valid()) {
 					c_vector origin;
 					if (game_utils::world_to_screen(target, origin)) {
-						directx_render::line({ ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetIO().DisplaySize.y }, (ImVec2)origin, c_color(globals::aye1[0] * 255.f, globals::aye1[1] * 255.f, globals::aye1[2] * 255.f, globals::aye1[3] * 255.f));
+						directx_render::line({ ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetIO().DisplaySize.y }, (ImVec2)origin, c_color(settings::aye1[0] * 255.f, settings::aye1[1] * 255.f, settings::aye1[2] * 255.f, settings::aye1[3] * 255.f));
 					}
 				}
 			}
@@ -513,9 +524,9 @@ void override_view_hook::hook(i_client_mode* self, c_view_setup& view) {
 	}
 
 	static bool should_reset_input_state;
-	if (GetAsyncKeyState(globals::thirdpersonkey)&1)
-		globals::thirdtemp = !globals::thirdtemp;
-	if (settings::get_bool("third_person") && globals::thirdtemp) {
+	if (GetAsyncKeyState(settings::thirdpersonkey)&1)
+		settings::thirdtemp = !settings::thirdtemp;
+	if (settings::get_bool("third_person") && settings::thirdtemp) {
 		c_vector view_vec; math::angle_to_vector(view.angles, view_vec);
 		view_vec.invert();
 

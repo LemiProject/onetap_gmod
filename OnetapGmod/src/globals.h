@@ -6,25 +6,43 @@
 
 namespace globals {
 	inline HINSTANCE dllInstance;
+
+	namespace game_info {
+		inline c_view_setup view_setup;
+		inline c_view_setup proof_view_setup;
+		inline int chocked_packets;
+	}
+
+	class c_entity_list
+	{
+		std::vector<std::string> classes;
+		std::mutex mutex;
+
+	public:
+		void push_back(const std::string& c);
+		void remove(int idx);
+		bool exist(const std::string& c);
+		int find(const std::string& c);
+		void exchange(const std::vector<std::string>& c);
+		bool empty();
+		void clear();
+
+		size_t size();
+		std::vector<std::string> data();
+	};
+
+	inline c_entity_list entitys_to_draw;
+
 	inline bool aimbotenable;
 	inline bool aimbot_autofire;
 	inline uint32_t fakelagkey;
 	inline bool glua;
 	inline bool thirdtemp;
 	inline uint32_t aimbotkey;
-	inline float aye[4]{ 255,255,255,1 };
-	inline float aye1[4]{ 255,255,255,1 };
+	inline float aye[4]{255,255,255,1};
+	inline float aye1[4]{ 255,255,255,1};
 	inline uint32_t thirdpersonkey;
-	namespace game_info {
-		inline c_view_setup view_setup;
-		inline c_view_setup proof_view_setup;
-		inline int chocked_packets;
-	}
-	inline std::string lua;
-	inline bool runlua;
-	inline std::string luacode;
 }
-
 
 enum class e_bones : int {
 	none = (0 << 0),
