@@ -53,7 +53,6 @@ std::filesystem::path file_tools::get_hack_directory_path()
 {
 	char* appdata = getenv("APPDATA");
 	filesystem::path path(appdata);
-	path.append("otgv4");
 
 	if (!exist(path.generic_string()))
 		create_directory(path);

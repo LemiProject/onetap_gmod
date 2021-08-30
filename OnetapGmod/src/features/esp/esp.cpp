@@ -8,7 +8,7 @@
 #include "../../utils/game_utils.h"
 
 #include "../../render_system/render_system.h"
-
+#include "../../globals.h"
 #include "../menu/widgets/widgets.h"
 #include "../../settings/settings.h"
 #include "../../game_sdk/entities/c_base_weapon.h"

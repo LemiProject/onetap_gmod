@@ -10,7 +10,25 @@ namespace settings {
 	
 	using var_id_t = std::string;
 	using var_id_t_non_copy = const var_id_t&;
+	class c_entity_list
+	{
+		std::vector<std::string> classes;
+		std::mutex mutex;
 
+	public:
+		void push_back(const std::string& c);
+		void remove(int idx);
+		bool exist(const std::string& c);
+		int find(const std::string& c);
+		void exchange(const std::vector<std::string>& c);
+		bool empty();
+		void clear();
+
+		size_t size();
+		std::vector<std::string> data();
+	};
+
+	inline c_entity_list entitys_to_draw;
 	namespace internal {
 		//ONLY FOR INTERNAL USING
 

@@ -402,7 +402,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	original(interfaces::client_mode, frame_time, cmd);
 	
 	if (settings::get_bool("fake_lags")) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
-	if (settings::get_bool("fake_duck") && GetAsyncKeyState(settings::fakelagkey)) {
+	if (settings::get_bool("fake_duck") && GetAsyncKeyState(globals::fakelagkey)) {
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;
 		if (send_packets) cmd->buttons |= IN_DUCK;  else cmd->buttons &= ~IN_DUCK;
 	}
@@ -490,8 +490,8 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				auto ratio = interfaces::engine->get_screen_aspect_ratio()/*(float)w / (float)h*/;
 				const auto screen_fov = atanf((ratio) * (0.75f) * tan(math::deg2rad(globals::game_info::view_setup.fov * 0.5f)));
 				const auto radius = tanf(math::deg2rad((float)settings::get_int("aimbot_fov"))) / tanf(screen_fov) * (w * 0.5f);
-				settings::aye[3] = 255.f;
-				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(settings::aye[0]*255.f, settings::aye[1]*255.f, settings::aye[2] * 255.f, settings::aye[3] * 255.f));
+				globals::aye[3] = 255.f;
+				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(globals::aye[0]*255.f, globals::aye[1]*255.f, globals::aye[2] * 255.f, globals::aye[3] * 255.f));
 			}
 
 			if (settings::get_bool("aimbot_draw_target")) {
@@ -499,7 +499,7 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				if (target.is_valid()) {
 					c_vector origin;
 					if (game_utils::world_to_screen(target, origin)) {
-						directx_render::line({ ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetIO().DisplaySize.y }, (ImVec2)origin, c_color(settings::aye1[0] * 255.f, settings::aye1[1] * 255.f, settings::aye1[2] * 255.f, settings::aye1[3] * 255.f));
+						directx_render::line({ ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetIO().DisplaySize.y }, (ImVec2)origin, c_color(globals::aye1[0] * 255.f, globals::aye1[1] * 255.f, globals::aye1[2] * 255.f, globals::aye1[3] * 255.f));
 					}
 				}
 			}
@@ -524,9 +524,9 @@ void override_view_hook::hook(i_client_mode* self, c_view_setup& view) {
 	}
 
 	static bool should_reset_input_state;
-	if (GetAsyncKeyState(settings::thirdpersonkey)&1)
-		settings::thirdtemp = !settings::thirdtemp;
-	if (settings::get_bool("third_person") && settings::thirdtemp) {
+	if (GetAsyncKeyState(globals::thirdpersonkey)&1)
+		globals::thirdtemp = !globals::thirdtemp;
+	if (settings::get_bool("third_person") && globals::thirdtemp) {
 		c_vector view_vec; math::angle_to_vector(view.angles, view_vec);
 		view_vec.invert();
 

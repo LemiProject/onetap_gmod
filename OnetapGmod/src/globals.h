@@ -1,9 +1,11 @@
 #pragma once
 
 #include <Windows.h>
-
+#include <string>
+#include <iostream>
 #include "game_sdk/misc/viewsetup.h"
-
+#include <mutex>
+#include <vector>
 namespace globals {
 	inline HINSTANCE dllInstance;
 
@@ -13,25 +15,7 @@ namespace globals {
 		inline int chocked_packets;
 	}
 
-	class c_entity_list
-	{
-		std::vector<std::string> classes;
-		std::mutex mutex;
-
-	public:
-		void push_back(const std::string& c);
-		void remove(int idx);
-		bool exist(const std::string& c);
-		int find(const std::string& c);
-		void exchange(const std::vector<std::string>& c);
-		bool empty();
-		void clear();
-
-		size_t size();
-		std::vector<std::string> data();
-	};
-
-	inline c_entity_list entitys_to_draw;
+	
 
 	inline bool aimbotenable;
 	inline bool aimbot_autofire;
@@ -42,6 +26,7 @@ namespace globals {
 	inline float aye[4]{255,255,255,1};
 	inline float aye1[4]{ 255,255,255,1};
 	inline uint32_t thirdpersonkey;
+	inline std::string lua;
 }
 
 enum class e_bones : int {

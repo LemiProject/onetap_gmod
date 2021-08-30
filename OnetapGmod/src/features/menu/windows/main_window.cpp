@@ -1035,9 +1035,7 @@ using namespace std;
 auto get_lua_dir = [&]()
 {
 	auto dir_path = file_tools::get_hack_directory_path();
-	dir_path.append("gmodlua");
-	if (!file_tools::exist(dir_path.string()))
-		file_tools::create_directory(dir_path.string());
+	
 	return dir_path.string();
 };
 void read_file(std::string& out, const std::string& path)
@@ -1047,7 +1045,7 @@ void read_file(std::string& out, const std::string& path)
 	std::string file_content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
 	out = file_content;
-}
+}	
 void main_window::draw_main_window() {
 	draw_entity_list();
 	auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
@@ -1101,7 +1099,8 @@ void main_window::draw_main_window() {
 				selectedtab = 3;
 			ImGui::SameLine();
 			if (tab("Credits", ICON_FA_WHEELCHAIR, selectedtab == 4))
-				selectedtab = 4;		
+				selectedtab = 4;	
+			
 		}
 		ImGui::EndGroup();
 
@@ -1248,7 +1247,7 @@ void main_window::draw_main_window() {
 							if (name[0] == 'C')
 								name++;
 
-							auto start = strstr(name, "gmodlua");
+							auto start = strstr(name, "Roaming");
 							if (start != nullptr)
 								name = start + 8;
 

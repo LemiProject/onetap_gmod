@@ -57,7 +57,6 @@ void glua_loader_window::draw_glua_loader_window(bool& draw_glua_loader) {
 		text_editor.Render("##LUA_EXECUTOR", calc_text_editor_size());
 
 		if (CenterButton("Execute", GetContentRegionAvail())) {
-			text_editor.SetText(globals::luacode);
 			std::thread(add_to_run).detach();
 		}
 
