@@ -38,6 +38,22 @@ c_vector game_utils::calc_angle(const c_vector& from, const c_vector& to) {
 	return ang;
 }
 
+std::vector<int> game_utils::get_valid_entities(bool dormant) {
+	if (!interfaces::engine->is_in_game())
+		return {};
+
+	auto local_player = get_local_player();
+	if (!local_player)
+		return {};
+
+	std::vector<int> c;
+	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i) {
+		auto ent = get_entity_by_index(i);
+		if (ent && ent->is_alive() && !ent->is_dormant() && !local_player->is_equal(ent)) c.push_back(i);
+	}
+	return c;
+}
+
 std::vector<int> game_utils::get_valid_players(bool dormant) {
 	if (!interfaces::engine->is_in_game())
 		return {};
@@ -45,11 +61,11 @@ std::vector<int> game_utils::get_valid_players(bool dormant) {
 	auto local_player = get_local_player();
 	if (!local_player)
 		return {};
-	
+
 	std::vector<int> c;
 	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i) {
 		auto ent = get_entity_by_index(i);
-		if (ent && ent->is_alive() && !ent->is_dormant() && !local_player->is_equal(ent)) c.push_back(i);
+		if (ent && ent->is_player() && ent->is_alive() && !ent->is_dormant() && !local_player->is_equal(ent)) c.push_back(i);
 	}
 	return c;
 }
@@ -99,7 +115,7 @@ void game_utils::trace_ray(trace_t& t, const c_vector& from, const c_vector& to,
 
 	c_vector start = from;
 	c_vector end = to;
-	
+
 	ray.init(start, end);
 	interfaces::engine_trace->trace_ray(ray, MASK_SHOT, filter, &t);
 }

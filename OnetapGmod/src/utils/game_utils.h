@@ -6,7 +6,7 @@
 
 namespace local_player_utils {
 	bool is_voice_recording();
-	
+
 }
 
 namespace game_utils {
@@ -14,7 +14,8 @@ namespace game_utils {
 
 	float get_fov(const c_vector& from , const c_vector& to);
 	c_vector calc_angle(const c_vector& from, const c_vector& to);
-	
+
+	std::vector<int> get_valid_entities(bool dormant = false);
 	std::vector<int> get_valid_players(bool dormant = false);
 
 	void trace_view_angles(trace_t& t, const q_angle& viewangles);

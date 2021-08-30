@@ -7,29 +7,6 @@ namespace math
 	constexpr int pitch = 0;
 	constexpr int yaw = 1;
 	constexpr int roll = 2;
-	
-	struct vec2_t
-	{
-		float x, y;
-
-		ImVec2 get_im_vec2() const
-		{
-			return { x, y };
-		}
-	};
-
-	struct box_t
-	{
-		float x, y, w, h;
-
-		vec2_t get_min() const { return { x, y }; }
-		vec2_t get_max() const { return { x + w, y + h }; }
-	};
-
-	__forceinline box_t create_box(vec2_t min, vec2_t max)
-	{
-		return { min.x, min.y, max.x - min.x, max.y - min.y };
-	}
 
 	constexpr float PI_F = 3.14159265358979323846f;
 	constexpr double PI_D = 3.14159265358979323846;

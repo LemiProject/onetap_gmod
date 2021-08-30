@@ -29,25 +29,37 @@
 ///		%name - entity name
 ///		%health - player health in procesnt`s
 
-std::string format_text_for_player(const std::string& str, c_base_player* ply) {
+std::string format_text_for_entity(const std::string& str, c_base_entity* ent) {
 	auto s = str;
-	if (settings::get_bool("esp_info"))
-	{
-		auto weapon = ply->get_active_weapon();
-		if (weapon)
+	if (ent->is_player()) {
+		auto ply = (c_base_player*)ent;
+		if (settings::get_bool("esp_info"))
 		{
-			auto weapon_name = weapon->get_print_name();
-			if (!weapon_name.c_str())
-				weapon_name = "None";
-			s = replace_all(s, "%activeweapon", weapon_name);
-		}
-		s = replace_all(s, "%name", ply->get_name());
-		s = replace_all(s, "%health", std::to_string(ply->get_health()));
-		s = replace_all(s, "%team_name", ply->get_team_name());
-		s = replace_all(s, "%user_group", ply->get_user_group());
+			auto weapon = ply->get_active_weapon();
+			if (weapon)
+			{
+				auto weapon_name = weapon->get_print_name();
+				if (!weapon_name.c_str())
+					weapon_name = "None";
+				s = replace_all(s, "%activeweapon", weapon_name);
+			}
+			s = replace_all(s, "%name", ply->get_name());
+			s = replace_all(s, "%health", std::to_string(ply->get_health()));
+			s = replace_all(s, "%team_name", ply->get_team_name());
+			s = replace_all(s, "%user_group", ply->get_user_group());
 
-		return s;
+			return s;
+		}
+	} else {
+		if (settings::get_bool("esp_info"))
+		{
+			s = replace_all(s, "%name", ent->get_lua_script_name());
+			s = replace_all(s, "%health", std::to_string(ent->get_health()));
+
+			return s;
+		}
 	}
+	return "";
 }
 
 void format_esp_map_for_players(std::unordered_map<uint64_t, esp::esp_text_t>& t, c_base_player* ply) {
@@ -62,7 +74,7 @@ __forceinline float calc_font_size(const esp::c_esp_box& box) {
 }
 
 void esp::c_esp_box::get_absolute_position(const ImVec2& r) {
-	
+
 }
 
 ImVec2 esp::c_esp_box::get_screen_position(const ImVec2& pos) const {
@@ -123,7 +135,7 @@ bool esp::c_esp_box::calc_box(c_base_entity* ent, c_esp_box& box) {
 
 ImVec2 esp::c_esp_box::calc_text_position(const c_esp_box& box, esp_text_t& text, std::array<ImVec2, 4>& last_positions) {
 	const ImVec2 box_size = { box.max.x - box.min.x, box.max.y - box.min.y };
-	
+
 	if (text.relative_position == (int)esp::e_esp_text_position::top) {
 		auto& last_position = last_positions[(int)esp::e_esp_text_position::top];
 		auto font_size = (text.size == -1 || text.size == 0 ) ? calc_font_size(box) : text.size;
@@ -191,7 +203,7 @@ void render_strings_for_players(esp::c_esp_box& box, c_base_player* player) {
 
 	//constants
 	box.text_storage.last_positions.fill({ -1, -1 });
-	
+
 	//render strings
 	{
 		for (auto& i : box.text_storage.strings) {
@@ -267,99 +279,12 @@ inline float calc_text_size(c_base_entity* ent, math::box_t box)
 	}
 	return size;
 }
-ImVec2 last_text_pos = { -1.f, -1.f };
-std::string last_text;
-void draw_health(c_base_entity* ent, math::box_t box,c_color color)
-{
-	if (ent->is_alive())
-	{
-		const auto health = std::clamp(ent->get_health(), 0, 100);
 
-		if (!ent->is_player())
-		{
-			const auto pos = ImVec2(box.x - 6.f, box.y);
-
-			const math::box_t void_box{ pos.x, pos.y, 3, box.h };
-			auto health_box{ void_box };
-
-			health_box.h = health * void_box.h / 100;
-			health_box.y = void_box.y + void_box.h - health_box.h;
-
-			//const auto health_color = c_color(settings::colors::colors_map["esp_health_color_hp"]);
-			//const auto void_color = c_color(settings::colors::colors_map["esp_health_color_void"]);
-
-//			directx_render::filled_rect(void_box, void_color);
-	//		directx_render::filled_rect(health_box, health_color);
-		}
-
-		if (!ent->is_player())
-		{
-			{
-
-				auto text = std::to_string(health);
-				auto font_size = calc_text_size(ent, box);
-				auto text_size = render_system::fonts::arial_font->CalcTextSizeA(font_size, FLT_MAX, 0, text.c_str());
-				auto text_pos = last_text_pos;
-
-				text_pos.x += text_size.y / 2.f;
-
-				float g = 255 * (health / 100.f);
-				c_color text_color = { 255 - g, g, 0 };
-
-				directx_render::text(render_system::fonts::arial_font, text, text_pos, font_size, color, directx_render::font_outline);
-
-				last_text_pos = text_pos;
-				last_text = text;
-			}
-		}
-	}
-}
-
-inline void draw_name(c_base_entity* ent, math::box_t& box, c_color color)
-{
-	const auto text = ent->is_player() ? static_cast<c_base_player*>(ent)->get_name() : ent->get_print_name();
-
-	auto font_size = calc_text_size(ent, box);
-	auto ts = render_system::fonts::arial_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, text.c_str());
-	const math::vec2_t text_size = { ts.x, ts.y };
-
-	//const auto position = math::vec2_t{ box.x + box.w * 0.5f/* - (text_size.x / 2.f)*/, box.y + box.h + text_size.y / 2};
-	const auto position = math::vec2_t{ box.x + box.w * 0.5f, box.y - text_size.y / 2 };
-
-	//const auto color = ent->is_player() ? static_cast<c_base_player*>(ent)->get_team_color() : c_color(1.0f,0,0);
-
-	directx_render::text(render_system::fonts::arial_font, text, position.get_im_vec2(), font_size, color, directx_render::font_centered | directx_render::font_outline);
-
-	/*if (ent->is_player())
-	{
-		auto sid = static_cast<c_base_player*>(ent)->get_steam_id();
-		if (!sid.empty())
-		{
-			if (std::find(settings::other::friends.begin(), settings::other::friends.end(), sid) != settings::other::friends.end())
-			{
-				constexpr auto str = "F";
-
-				auto name_size = ts;
-				ts = render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, str);
-				auto pos = ImVec2(box.x + box.w + ts.y / 2.f, box.y);
-
-				if (last_text_pos.x >= 0 && last_text_pos.y >= 0)
-					pos.y = last_text_pos.y + render_system::fonts::in_game_font->CalcTextSizeA(font_size, FLT_MAX, 0.f, last_text.c_str()).y;
-
-				directx_render::text(render_system::fonts::in_game_font, str, pos, font_size, colors::green_color, directx_render::font_outline);
-
-				last_text_pos = pos;
-				last_text = str;
-			}
-		}
-	}*/
-
-}
 inline void draw_box(c_base_entity* ent, math::box_t& box)
 {
-	
+
 		directx_render::corner_box1(box, c_color(1.0f,1.0f,1.0f));
-	
+
 }
 void esp::draw_esp() {
 	if (!settings::get_bool("esp_enable"))
@@ -368,8 +293,8 @@ void esp::draw_esp() {
 	if (!interfaces::engine->is_in_game())
 		return;
 
-	
-	for (auto i : game_utils::get_valid_players(true)) {
+
+	for (auto i : game_utils::get_valid_entities(true)) {
 		auto p = get_player_by_index(i);
 		if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_float("esp_dist"))
 			continue;
