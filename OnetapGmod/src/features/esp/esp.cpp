@@ -33,12 +33,17 @@ std::string format_text_for_player(const std::string& str, c_base_player* ply) {
 	auto s = str;
 	if (settings::get_bool("esp_info"))
 	{
-	
-			s = replace_all(s, "%activeweapon", ply->get_active_weapon()->get_print_name());
-		
+		auto weapon = ply->get_active_weapon();
+		if (weapon)
+		{
+			auto weapon_name = weapon->get_print_name();
+			if (!weapon_name.c_str())
+				weapon_name = "None";
+			s = replace_all(s, "%activeweapon", weapon_name);
+		}
 		s = replace_all(s, "%name", ply->get_name());
 		s = replace_all(s, "%health", std::to_string(ply->get_health()));
-
+		s = replace_all(s, "%team_name", ply->get_team_name());
 		s = replace_all(s, "%user_group", ply->get_user_group());
 
 		return s;
@@ -53,7 +58,7 @@ void format_esp_map_for_players(std::unordered_map<uint64_t, esp::esp_text_t>& t
 }
 
 __forceinline float calc_font_size(const esp::c_esp_box& box) {
-	return 13.f;
+	return 15.f;
 }
 
 void esp::c_esp_box::get_absolute_position(const ImVec2& r) {

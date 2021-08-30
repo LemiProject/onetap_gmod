@@ -22,19 +22,9 @@ namespace settings {
 		size_t size();
 		std::vector<std::string> data();
 	};
-
 	inline c_entity_list entitys_to_draw;
 	using var_id_t = std::string;
 	using var_id_t_non_copy = const var_id_t&;
-	inline bool aimbotenable;
-	inline bool aimbot_autofire;
-	inline uint32_t fakelagkey;
-	inline bool glua;
-	inline bool thirdtemp;
-	inline uint32_t aimbotkey;
-	inline float aye[4]{255,255,255,1};
-	inline float aye1[4]{ 255,255,255,1};
-	inline uint32_t thirdpersonkey;
 	bool& get_bool(var_id_t_non_copy name);
 	float& get_float(var_id_t_non_copy name);
 	int& get_int(var_id_t_non_copy name);

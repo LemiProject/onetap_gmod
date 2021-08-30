@@ -6,6 +6,7 @@
 #include "windows/background_window.h"
 #include "windows/glua_loader_window.h"
 #include "../../settings/settings.h"
+#include "../../globals.h"
 #pragma comment(lib, "freetype28.lib")
 bool is_menu_open;
 
@@ -35,7 +36,7 @@ void menu::draw_menu() {
 		//background_window::draw_background_window();
 		
 		main_window::draw_main_window();
-			glua_loader_window::draw_glua_loader_window(settings::glua);
+		//glua_loader_window::draw_glua_loader_window(globals::glua);
 		ImGui::PopStyleVar();
 	}
 	else

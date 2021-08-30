@@ -6,12 +6,23 @@
 
 namespace globals {
 	inline HINSTANCE dllInstance;
-
+	inline bool aimbotenable;
+	inline bool aimbot_autofire;
+	inline uint32_t fakelagkey;
+	inline bool glua;
+	inline bool thirdtemp;
+	inline uint32_t aimbotkey;
+	inline float aye[4]{ 255,255,255,1 };
+	inline float aye1[4]{ 255,255,255,1 };
+	inline uint32_t thirdpersonkey;
 	namespace game_info {
 		inline c_view_setup view_setup;
 		inline c_view_setup proof_view_setup;
 		inline int chocked_packets;
 	}
+	inline std::string lua;
+	inline bool runlua;
+	inline std::string luacode;
 }
 
 

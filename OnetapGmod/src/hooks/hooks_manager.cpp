@@ -50,129 +50,6 @@ end)
 
 )";
 
-
-#ifndef VTABLE_H
-#define VTABLE_H
-
-#define ushort_max (unsigned short(-1))
-
-typedef char* vtindex; // sizeof(pointer) with ability to add numbers and shit 
-#ifndef offset
-#define offset(x,y) ((char *)(x) - (char *)(y))
-#endif
-
-class VTable
-{
-public:
-	VTable(void* object)
-	{
-		original_vt = *(vtindex**)object;
-		vtindex* last_index = original_vt;
-		while (*last_index++);
-
-		unsigned int size = offset(last_index, original_vt) / sizeof(*last_index);
-
-		new_vt = new vtindex[size];
-		while (--last_index >= original_vt)
-			new_vt[offset(last_index, original_vt) / sizeof(*last_index)] = *last_index;
-
-		*(vtindex**)object = new_vt;
-
-		hooked = (void**)object;
-	}
-	~VTable()
-	{
-		*hooked = original_vt;
-		delete[] new_vt;
-	}
-
-	void hook(unsigned short index, void* func)
-	{
-		get(index) = (vtindex)func;
-	}
-	void unhook(unsigned short index)
-	{
-		get(index) = getold(index);
-	}
-
-
-	vtindex& getold(unsigned short index) { return original_vt[index]; }
-
-private:
-	vtindex& get(unsigned short index) { return new_vt[index]; }
-
-
-public:
-	vtindex* original_vt;
-	vtindex* new_vt;
-	void** hooked;
-
-};
-
-#undef offset
-
-#endif // VTABLE_H
-#define CREATELUAINTERFACE 4
-#define CLOSELUAINTERFACE 5
-#define RUNSTRINGEX 111
-void* clientState;
-VTable* sharedHooker;
-VTable* clientHooker;
-
-
-
-typedef void* (__thiscall* hRunStringExFn)(void*, char const*, char const*, char const*, bool, bool, bool, bool);
-void* __fastcall hRunStringEx(void* _this, void*, char const* filename, char const* path, char const* torun, bool run, bool showerrors, bool idk, bool idk2)
-{
-
-	auto dfgd = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
-	if (!dfgd)
-		return {};
-	c_lua_auto_pop p(dfgd);
-
-	dfgd->push_special((int)e_special::glob);
-	dfgd->get_field(-1, "hook");
-	dfgd->get_field(-1, "Call");
-	dfgd->push_string("RunOnClient");
-	dfgd->push_nil();
-	dfgd->push_string(filename);
-	dfgd->push_string(torun);
-	dfgd->call(4, 1);
-	if (!dfgd->is_type(-1, (int)lua_object_type::NIL))
-		torun = dfgd->check_string();
-	dfgd->pop(3);
-
-
-	return hRunStringExFn(clientHooker->getold(RUNSTRINGEX))(_this, filename, path, torun, run, showerrors, idk, idk2);
-}
-
-typedef void* (__thiscall* hCloseLuaInterfaceFn)(void*, void*);
-void* __fastcall hCloseLuaInterface(void* _this, void* ukwn, void* luaInterface)
-{
-	if (luaInterface == clientState)
-		clientState = NULL;
-
-	return hCloseLuaInterfaceFn(sharedHooker->getold(CLOSELUAINTERFACE))(_this, luaInterface);
-}
-
-
-
-typedef void* (__thiscall* hCreateLuaInterfaceFn)(void*, char, bool);
-void* __fastcall hCreateLuaInterface(void* _this, void*, char stateType, bool renew)
-{
-	void* state = hCreateLuaInterfaceFn(sharedHooker->getold(4))(_this, stateType, renew);
-
-
-	if (stateType != 0)
-		return state;
-
-	clientState = state;
-
-	clientHooker = new VTable(clientState);
-	clientHooker->hook(RUNSTRINGEX, hRunStringEx);
-
-	return clientState;
-}
 std::shared_ptr<min_hook_pp::c_min_hook> minpp = nullptr;
 uintptr_t cl_move = 0;
 
@@ -310,17 +187,15 @@ void hook_dx() {
 	}
 }
 
+void post_hook_init() {
+	if (auto i = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu); i)
+		i->run_string("RunString", "RunString", exec_code.c_str(), true, true);
+}
 
 void hooks_manager::init() {
 	minpp = std::make_shared<min_hook_pp::c_min_hook>();
 	cl_move = memory_utils::relative_to_absolute((uintptr_t)memory_utils::pattern_scanner("engine.dll", "E8 ? ? ? ? FF 15 ? ? ? ? F2 0F 10 0D ? ? ? ? 85 FF"), 0x1, 5);
-	/*sharedHooker = new VTable(interfaces::lua_shared);
 
-	sharedHooker->hook(CREATELUAINTERFACE, hCreateLuaInterface);
-	sharedHooker->hook(CLOSELUAINTERFACE, hCloseLuaInterface);
-	auto dfgd = interfaces::lua_shared->get_lua_interface((unsigned char)e_interface_type::menu);
-	c_lua_auto_pop p(dfgd);
-	dfgd->run_string("RunString", "RunString", exec_code.c_str(), true, true);*/
 	hook_dx();
 
 	CREATE_HOOK(interfaces::client_mode, create_move_hook::idx, create_move_hook::hook, create_move_hook::original);
@@ -329,21 +204,23 @@ void hooks_manager::init() {
 	CREATE_HOOK(interfaces::prediction, run_command_hook::idx, run_command_hook::hook, run_command_hook::original);
 	CREATE_HOOK(interfaces::engine, get_aspect_ration_hook::idx, get_aspect_ration_hook::hook, get_aspect_ration_hook::original);
 	CREATE_HOOK(interfaces::mat_render_context, read_pixels_hook::idx, read_pixels_hook::hook, read_pixels_hook::original);
-	
+
 	create_hook((void*)memory_utils::pattern_scanner("client.dll", "40 55 53 57 48 8D 6C 24 ? 48 81 EC ? ? ? ? 48 8B DA"), override_view_hook::hook, (void**)(&override_view_hook::original));
 	create_hook((void*)cl_move, cl_move_hook::hook, (void**)(&cl_move_hook::original));
 	create_hook((void*)memory_utils::pattern_scanner("client.dll", "40 53 48 83 EC 20 E8 ? ? ? ? 48 8B 0D ? ? ? ?"), get_viewmodel_fov::hook, (void**)(&get_viewmodel_fov::original));
 	create_hook((void*)memory_utils::pattern_scanner("client.dll", "40 57 48 83 EC 20 83 7A 08 00"), view_render_hook::hook, (void**)(&view_render_hook::original));
-	
+
 	if (const auto run_string_ex_fn_ptr = reinterpret_cast<run_string_ex::fn>(memory_utils::pattern_scanner(
 		"lua_shared.dll", "40 55 53 56 57 41 54 41 56 41 57 48 8D AC 24 ? ? ? ? 48 81 EC ? ? ? ? 48 8B 05 ? ? ? ? 48 33 C4 48 89 85 ? ? ? ? 49 8B F1")); run_string_ex_fn_ptr)
 		create_hook(run_string_ex_fn_ptr, run_string_ex::hook, reinterpret_cast<void**>(&run_string_ex::original));
-	
+
 	auto* const game_hwnd = FindWindowW(0, L"Garry's Mod (x64)");
 	wndproc_hook::original_wndproc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
 		game_hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wndproc_hook::hooked_wndproc)));
-	
+
 	minpp->enable_hook();
+
+	post_hook_init();
 }
 
 void hooks_manager::shutdown() {
@@ -518,13 +395,13 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	original(interfaces::client_mode, frame_time, cmd);
 	
 	if (settings::get_bool("fake_lags")) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
-	if (settings::get_bool("fake_duck") && GetAsyncKeyState(settings::fakelagkey)) {
+	if (settings::get_bool("fake_duck") && GetAsyncKeyState(globals::fakelagkey)) {
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;
 		if (send_packets) cmd->buttons |= IN_DUCK;  else cmd->buttons &= ~IN_DUCK;
 	}
 	main_window::update_entity_list();
 	lua_futures::run_all_code();
-
+	 
 	globals::game_info::chocked_packets = !send_packets ? globals::game_info::chocked_packets + 1 : 0;
 	
 	return false;
@@ -540,12 +417,12 @@ void lock_cursor_hook::hook(i_surface* self) {
 	}
 	original(self);
 }
-
 bool run_string_ex::hook(c_lua_interface* self, const char* filename, const char* path,
 	const char* string_to_run, bool run, bool print_errors, bool dont_push_errors, bool no_returns) {
 	static c_lua_interface* last_self;
 	static bool last_first;
 
+	bool is_client = self == interfaces::lua_shared->get_lua_interface((int)e_interface_type::client);
 	if (std::string(filename) != "RunString(Ex)")
 		lua_futures::last_file_name = filename;
 
@@ -553,24 +430,33 @@ bool run_string_ex::hook(c_lua_interface* self, const char* filename, const char
 	if (self != last_self && interfaces::engine->is_drawing_loading_image())
 		is_first = true;
 	last_self = self;
+
+#if defined(_DEBUG)
 	if (is_first) std::cout << filename << std::endl;
+#endif
 
-	if (is_first) {
-		std::string out_str;
-		auto str_to_run = std::string(string_to_run);
-		str_to_run += u8"\n";
-		str_to_run += lua_futures::bypass;
-		out_str = str_to_run;
+	if (is_client) {
+		std::string torun= string_to_run;
+		auto menu_interface = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
+	
 
-		std::cout << std::endl << out_str << std::endl;
+		menu_interface->push_special((int)e_special::glob);
+		menu_interface->get_field(-1, "hook");
+		menu_interface->get_field(-1, "Call");
+		menu_interface->push_string("RunOnClient");
+		menu_interface->push_nil();
+		menu_interface->push_string(filename);
+		menu_interface->push_string(string_to_run);
+		menu_interface->call(4, 1);
+		if (!menu_interface->is_type(-1, (int)lua_object_type::NIL))
+			torun = menu_interface->check_string();
+		menu_interface->pop(3);
 
-		last_first = true;
-		return original(self, filename, path, out_str.c_str(), run, print_errors, dont_push_errors, no_returns);
+		return original(self, filename, path, torun.c_str(), run, print_errors, dont_push_errors, no_returns);
 	}
 
 	return original(self, filename, path, string_to_run, run, print_errors, dont_push_errors, no_returns);
 }
-
 void run_command_hook::hook(i_prediction* pred, c_base_entity* player, c_user_cmd* ucmd, i_move_helper* move_helper) {
 	q_angle va;
 	interfaces::engine->get_view_angles(va);
@@ -593,8 +479,8 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				auto ratio = interfaces::engine->get_screen_aspect_ratio()/*(float)w / (float)h*/;
 				const auto screen_fov = atanf((ratio) * (0.75f) * tan(math::deg2rad(globals::game_info::view_setup.fov * 0.5f)));
 				const auto radius = tanf(math::deg2rad((float)settings::get_int("aimbot_fov"))) / tanf(screen_fov) * (w * 0.5f);
-				settings::aye[3] = 255.f;
-				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(settings::aye[0]*255.f, settings::aye[1]*255.f, settings::aye[2] * 255.f, settings::aye[3] * 255.f));
+				globals::aye[3] = 255.f;
+				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(globals::aye[0]*255.f, globals::aye[1]*255.f, globals::aye[2] * 255.f, globals::aye[3] * 255.f));
 			}
 
 			if (settings::get_bool("aimbot_draw_target")) {
@@ -602,7 +488,7 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				if (target.is_valid()) {
 					c_vector origin;
 					if (game_utils::world_to_screen(target, origin)) {
-						directx_render::line({ ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetIO().DisplaySize.y }, (ImVec2)origin, c_color(settings::aye1[0] * 255.f, settings::aye1[1] * 255.f, settings::aye1[2] * 255.f, settings::aye1[3] * 255.f));
+						directx_render::line({ ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetIO().DisplaySize.y }, (ImVec2)origin, c_color(globals::aye1[0] * 255.f, globals::aye1[1] * 255.f, globals::aye1[2] * 255.f, globals::aye1[3] * 255.f));
 					}
 				}
 			}
@@ -627,9 +513,9 @@ void override_view_hook::hook(i_client_mode* self, c_view_setup& view) {
 	}
 
 	static bool should_reset_input_state;
-	if (GetAsyncKeyState(settings::thirdpersonkey)&1)
-		settings::thirdtemp = !settings::thirdtemp;
-	if (settings::get_bool("third_person") && settings::thirdtemp) {
+	if (GetAsyncKeyState(globals::thirdpersonkey)&1)
+		globals::thirdtemp = !globals::thirdtemp;
+	if (settings::get_bool("third_person") && globals::thirdtemp) {
 		c_vector view_vec; math::angle_to_vector(view.angles, view_vec);
 		view_vec.invert();
 

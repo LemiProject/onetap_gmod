@@ -51,18 +51,12 @@ std::string file_tools::get_hack_directory()
 
 std::filesystem::path file_tools::get_hack_directory_path()
 {
-	auto documents = sago::getDataHome();
-	filesystem::path path(documents);
-	path.append("Wittchen");
+	char* appdata = getenv("APPDATA");
+	filesystem::path path(appdata);
+	path.append("otgv4");
 
-	if (!exist(path.generic_u8string()))
+	if (!exist(path.generic_string()))
 		create_directory(path);
 
-	auto data_path = path;
-	data_path.append("GMOD");
-
-	if (!exist(data_path.generic_u8string()))
-		create_directory(data_path);
-
-	return data_path;
+	return path;
 }

@@ -139,9 +139,9 @@ c_vector aimbot::get_aimbot_target()
 }
 
 void aimbot::run_aimbot(c_user_cmd& cmd) {
-	if (!settings::aimbotenable)
+	if (!globals::aimbotenable)
 		return;
-	if (!GetAsyncKeyState(settings::aimbotkey) && settings::aimbotkey != 0)
+	if (!GetAsyncKeyState(globals::aimbotkey) && globals::aimbotkey != 0)
 		return;
 	if (!cmd.is_in_fire() && !settings::get_bool("aimbot_autofire"))
 		return;
