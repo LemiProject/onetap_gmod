@@ -445,10 +445,8 @@ bool run_string_ex::hook(c_lua_interface* self, const char* filename, const char
 	#endif
 
 	if (is_client) {
-		std::string torun;
+		std::string torun = string_to_run;
 		auto menu_interface = interfaces::lua_shared->get_lua_interface((int)e_interface_type::menu);
-		if (!menu_interface)
-			return {};
 
 		menu_interface->push_special((int)e_special::glob);
 		menu_interface->get_field(-1, "hook");

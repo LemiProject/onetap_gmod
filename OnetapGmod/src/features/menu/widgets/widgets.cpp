@@ -150,6 +150,10 @@ ImVec2 ImGui::Translate(const ImVec2& from, const ImVec2& to, float speed) {
 static Wittchen::WitthcenEspStyleEditor g_style_editor;
 
 c_color Wittchen::WitthcenEspStyleEditor::GetAutoColor(const std::string& name, c_base_entity* entity) {
+	if (name == "%health") {
+		float g = 255 * (entity->get_health_procentage() / 100.f);
+		return { 255 - g, g, 0 };
+	}
 	return colors::white_color;
 }
 
@@ -203,11 +207,12 @@ void Wittchen::InitializeEspStyleEditor() {
 
 
 void Wittchen::ApplyStyleToBox(esp::c_esp_box& box) {
+	g_style_editor.temp_box.type = settings::get_int("esp_type");
 	
 	//box style
 	box.color = g_style_editor.temp_box.color;
 	box.rounding = g_style_editor.temp_box.rounding;
-	box.type =  settings::get_int("esp_type");
+	box.type = g_style_editor.temp_box.type;
 	box.border_color = g_style_editor.temp_box.border_color;
 	
 	//text applying

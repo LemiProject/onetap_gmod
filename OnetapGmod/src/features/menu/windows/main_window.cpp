@@ -657,7 +657,7 @@ uint32_t key;
 IDirect3DTexture9* tImage = nullptr;
 auto entity_lists_update_time_stamp = 0.f;
 bool is_entlists_updating = false;
-settings::c_entity_list ent_list;
+globals::c_entity_list ent_list;
 // <steam_id, name>
 std::map<std::string, std::string> players_list;
 
@@ -803,12 +803,12 @@ void draw_entity_list()
 					ImGui::TableNextColumn();
 					ImGui::Text("%s", class_name.c_str());
 					ImGui::TableNextColumn();
-					if (ImGui::Button(settings::entitys_to_draw.exist(class_name) ? (std::string("Remove##ENTS_TABLE") + class_name).c_str() : (std::string("Add##ENTS_TABLE") + class_name).c_str()))
+					if (ImGui::Button(globals::entitys_to_draw.exist(class_name) ? (std::string("Remove##ENTS_TABLE") + class_name).c_str() : (std::string("Add##ENTS_TABLE") + class_name).c_str()))
 					{
-						if (settings::entitys_to_draw.exist(class_name))
-							settings::entitys_to_draw.remove(settings::entitys_to_draw.find(class_name));
+						if (globals::entitys_to_draw.exist(class_name))
+							globals::entitys_to_draw.remove(globals::entitys_to_draw.find(class_name));
 						else
-							settings::entitys_to_draw.push_back(class_name);
+							globals::entitys_to_draw.push_back(class_name);
 					}
 
 				}

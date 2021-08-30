@@ -7,7 +7,7 @@
 #include "windows/glua_loader_window.h"
 #include "../../settings/settings.h"
 #include "../../globals.h"
-#pragma comment(lib, "freetype28.lib")
+
 bool is_menu_open;
 
 constexpr auto animation_speed = 4.f;

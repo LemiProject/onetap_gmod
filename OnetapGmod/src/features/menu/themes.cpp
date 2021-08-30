@@ -2,9 +2,9 @@
 
 #include <imgui/im_tools.h>
 #include <fontawesomium.h>
-#include "C:\Users\Lil\Documents\aaa\examples\sffont.hpp"
-#include "C:\Users\Lil\Documents\aaa\examples\hashes.h"
-#include "C:\Users\Lil\Documents\aaa\examples\faprolight.hpp"
+#include "sffont.hpp"
+#include "hashes.h"
+#include "faprolight.hpp"
 
 
 using namespace ImGui;
