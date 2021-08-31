@@ -780,7 +780,8 @@ void draw_entity_list()
 			entity_filter.Draw("Filter (inc,-exc)");
 			PopItemWidth();
 			SameLine();
-			//	Hotkey("Add##ADD_ENTITY_HOTKEY", &settings::binds["other::add_entity"], { GetContentRegionAvailWidth() / 1.5f, 0 });
+			
+			Hotkey("Add##ADD_ENTITY_HOTKEY", &settings::get_var<uint32_t>("add_entity_bind"), { GetContentRegionAvailWidth() / 1.5f, 0 });
 			if (IsItemHovered())
 			{
 				BeginTooltip();

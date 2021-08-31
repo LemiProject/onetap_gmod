@@ -401,7 +401,19 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 
 	cmd->viewangles.normalize();
 	original(interfaces::client_mode, frame_time, cmd);
-	
+
+	if (input_system::is_key_just_pressed(settings::get_var<uint32_t>("add_entity_bind"))) {
+		q_angle ang; interfaces::engine->get_view_angles(ang);
+
+		trace_t tr;
+		game_utils::trace_view_angles(tr, ang);
+
+		if (tr.m_pEnt) {
+			auto ent = (c_base_entity*)tr.m_pEnt;
+			if (ent->is_alive() && !ent->is_dormant()) globals::entitys_to_draw.push_back(ent->get_classname());
+		}
+	}
+
 	if (settings::get_bool("fake_lags")) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
 	if (settings::get_bool("fake_duck") && GetAsyncKeyState(globals::fakelagkey)) {
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;

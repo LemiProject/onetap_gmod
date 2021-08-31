@@ -5,6 +5,9 @@
 
 #include "bind_system.h"
 
+#define IF_NOT_EXIST_CREATE_VAR_ FALSE
+//#define IF_NOT_EXIST_CREATE_VAR_ TRUE
+
 namespace settings {
 	using namespace bind_system;
 	
@@ -27,7 +30,10 @@ namespace settings {
 	template <typename t>
 	inline t& get_var(var_id_t_non_copy name) {
 		if (!var_exist(name))
-			throw std::exception(("Cannot find variable " + name).c_str());
+			if (IF_NOT_EXIST_CREATE_VAR_)
+				internal::get_settings_storage()[name] = (t)0;
+			else
+				throw std::exception(("Cannot find variable " + name).c_str());
 		try {
 			return *std::any_cast<t>(&internal::get_settings_storage()[name]);
 		} catch (...) {

@@ -30,7 +30,8 @@ internal::settings_storage_type settings_storage {
 	{"custom_aspect_ratio", 0},
 	{"third_person_distance", 50},
 	{"fake_lags_amount", 0},
-	{"autostrafe", false}
+	{"autostrafe", false},
+	{"add_entity_bind", 0}
 
 };
 
