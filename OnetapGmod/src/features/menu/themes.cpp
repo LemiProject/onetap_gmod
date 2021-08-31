@@ -47,6 +47,9 @@ void menu_themes::standard_theme() {
  		style.SelectableTextAlign = ImVec2(0.500000f,0.500000f);
 
 	ImVec4* colors = ImGui::GetStyle().Colors;
+	colors[ImGuiCol_Tab] = ImColor(155, 155, 159, 255);
+	colors[ImGuiCol_TabHovered] = ImColor(145, 145, 149, 255);
+	colors[ImGuiCol_TabActive] = ImColor(155, 155, 159, 255);
 	colors[ImGuiCol_Text] = ImVec4(0.900000f, 0.900000f, 0.900000f, 1.000000f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.600000f, 0.600000f, 0.600000f, 1.000000f);
 	colors[ImGuiCol_WindowBg] = ImVec4(0.000000f, 0.000000f, 0.000000f, 0.000000f);
@@ -57,9 +60,9 @@ void menu_themes::standard_theme() {
 	colors[ImGuiCol_FrameBg] = ImVec4(0.430000f, 0.430000f, 0.430000f, 0.390000f);
 	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.470000f, 0.470000f, 0.690000f, 0.400000f);
 	colors[ImGuiCol_FrameBgActive] = ImVec4(0.420000f, 0.410000f, 0.640000f, 0.690000f);
-	colors[ImGuiCol_TitleBg] = ImVec4(0.270000f, 0.270000f, 0.540000f, 0.830000f);
-	colors[ImGuiCol_TitleBgActive] = ImVec4(0.320000f, 0.320000f, 0.630000f, 0.870000f);
-	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.400000f, 0.400000f, 0.800000f, 0.200000f);
+	colors[ImGuiCol_TitleBg] = ImColor(15, 15, 20, 250);
+	colors[ImGuiCol_TitleBgActive] = ImColor(15, 15, 20, 250);
+	colors[ImGuiCol_TitleBgCollapsed] = ImColor(15, 15, 20, 250);
 	colors[ImGuiCol_MenuBarBg] = ImVec4(0.400000f, 0.400000f, 0.550000f, 0.800000f);
 	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.200000f, 0.250000f, 0.300000f, 0.600000f);
 	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.400000f, 0.400000f, 0.800000f, 0.300000f);

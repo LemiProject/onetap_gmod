@@ -757,71 +757,161 @@ void main_window::update_entity_list()
 
 	is_entlists_updating = false;
 }
-
+bool drawentlist;
 
 void draw_entity_list()
 {
 	using namespace ImGui;
+	if (drawentlist) {
+		int w, h;
+		interfaces::engine->get_screen_size(w, h);
+		ImGui::SetNextWindowSize({ w / 2.f, h / 2.f }, ImGuiCond_FirstUseEver);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(33 / 255.f, 33 / 255.f, 38 / 255.f, 180 / 255.f));
 
-	int w, h;
-	interfaces::engine->get_screen_size(w, h);
-	ImGui::SetNextWindowSize({ w / 2.f, h / 2.f }, ImGuiCond_FirstUseEver);
-	Begin("Target list##SUBWINDOW");
+		Begin("Target list##SUBWINDOW");
 
-	BeginTabBar("##ENTITY_LIST_TAB_BAR");
+		BeginTabBar("##ENTITY_LIST_TAB_BAR");
 
-	if (BeginTabItem("Entities"))
-	{
-		static ImGuiTextFilter entity_filter;
-
-		PushItemWidth(GetContentRegionAvailWidth() - (GetContentRegionAvailWidth() / 2.3f));
-		entity_filter.Draw("Filter (inc,-exc)");
-		PopItemWidth();
-		SameLine();
-	//	Hotkey("Add##ADD_ENTITY_HOTKEY", &settings::binds["other::add_entity"], { GetContentRegionAvailWidth() / 1.5f, 0 });
-		if (IsItemHovered())
+		if (BeginTabItem("Entities"))
 		{
-			BeginTooltip();
-			Text("Add the entity you are looking at");
-			EndTooltip();
-		}
+			static ImGuiTextFilter entity_filter;
 
-		if (ImGui::BeginTable("entities_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
-		{
-			ImGui::TableSetupColumn("Name");
-			ImGui::TableSetupColumn("ESP");
-			ImGui::TableHeadersRow();
-
-			if (!is_entlists_updating)
+			PushItemWidth(GetContentRegionAvailWidth() - (GetContentRegionAvailWidth() / 2.0f));
+			entity_filter.Draw("Filter (inc,-exc)");
+			PopItemWidth();
+			SameLine();
+			//	Hotkey("Add##ADD_ENTITY_HOTKEY", &settings::binds["other::add_entity"], { GetContentRegionAvailWidth() / 1.5f, 0 });
+			if (IsItemHovered())
 			{
-				for (auto class_name : ent_list.data())
-				{
-					if (!entity_filter.PassFilter(class_name.c_str()))
-						continue;
-
-					ImGui::TableNextRow();
-					ImGui::TableNextColumn();
-					ImGui::Text("%s", class_name.c_str());
-					ImGui::TableNextColumn();
-					if (ImGui::Button(globals::entitys_to_draw.exist(class_name) ? (std::string("Remove##ENTS_TABLE") + class_name).c_str() : (std::string("Add##ENTS_TABLE") + class_name).c_str()))
-					{
-						if (globals::entitys_to_draw.exist(class_name))
-							globals::entitys_to_draw.remove(globals::entitys_to_draw.find(class_name));
-						else
-							globals::entitys_to_draw.push_back(class_name);
-					}
-
-				}
+				BeginTooltip();
+				Text("Add the entity you are looking at");
+				EndTooltip();
 			}
-			ImGui::EndTable();
+
+			if (ImGui::BeginTable("entities_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
+			{
+				ImGui::TableSetupColumn("Name");
+				ImGui::TableSetupColumn("ESP");
+				ImGui::TableHeadersRow();
+
+				if (!is_entlists_updating)
+				{
+					for (auto class_name : ent_list.data())
+					{
+						if (!entity_filter.PassFilter(class_name.c_str()))
+							continue;
+
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
+						ImGui::Text("%s", class_name.c_str());
+						ImGui::TableNextColumn();
+						if (button(globals::entitys_to_draw.exist(class_name) ? (std::string("Remove##ENTS_TABLE") + class_name).c_str() : (std::string("Add##ENTS_TABLE") + class_name).c_str(), { 0,0 }))
+						{
+							if (globals::entitys_to_draw.exist(class_name))
+								globals::entitys_to_draw.remove(globals::entitys_to_draw.find(class_name));
+							else
+								globals::entitys_to_draw.push_back(class_name);
+						}
+
+					}
+				}
+				ImGui::EndTable();
+			}
+
+			EndTabItem();
+		}
+		if (BeginTabItem("Players"))
+		{
+			static ImGuiTextFilter player_filter;
+
+			PushItemWidth(GetContentRegionAvailWidth() - (GetContentRegionAvailWidth() / 2.3f));
+			player_filter.Draw("Filter (inc,-exc)");
+			PopItemWidth();
+			SameLine();
+			//	Hotkey("Add##ADD_ENTITY_HOTKEY", &settings::binds["other::add_entity"], { GetContentRegionAvailWidth() / 1.5f, 0 });
+			if (IsItemHovered())
+			{
+				BeginTooltip();
+				Text("Add the entity you are looking at");
+				EndTooltip();
+			}
+
+			if (BeginTable("players_table", 3, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
+			{
+				TableSetupColumn("Name");
+				TableSetupColumn("STEAM-ID");
+				TableSetupColumn("FRIEND");
+				TableHeadersRow();
+
+				/*if (!is_entlists_updating)
+				{
+					for (auto [steam_id, name] : players_list)
+					{
+						if (player_filter.PassFilter(steam_id.c_str()) || player_filter.PassFilter(name.c_str()))
+						{
+							TableNextRow();
+							TableNextColumn();
+							Text(name.c_str());
+							TableNextColumn();
+							Text(steam_id.c_str());
+							TableNextColumn();
+
+
+							if (Button((std::find(friends.begin(), friends.end(), steam_id.c_str()) == friends.end()) ?
+								("Add##" + steam_id).c_str() :
+								("Remove##" + steam_id).c_str()))
+							{
+								if (std::find(friends.begin(), friends.end(), steam_id.c_str()) == friends.end())
+									friends.push_back(steam_id);
+								else
+									friends.erase(std::find(friends.begin(), friends.end(), steam_id.c_str()));
+							}
+						}
+					}
+				}*/
+				EndTable();
+			}
+
+			EndTabItem();
 		}
 
-		EndTabItem();
+		if (BeginTabItem("Teams"))
+		{
+			if (BeginTable("teams_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
+			{
+				TableSetupColumn("Name");
+				TableSetupColumn("Friendly");
+				TableHeadersRow();
+
+				/*if (!is_entlists_updating)
+				{
+					for (auto [id, team] : teams_list)
+					{
+						TableNextRow();
+						TableNextColumn();
+						TextColored(team.color.get_vec4(), team.name.c_str());
+						TableNextColumn();
+						if (Button((std::find(friendly_teams.begin(), friendly_teams.end(), id) == friendly_teams.end()) ?
+							("Add##TEAM_" + std::to_string(id)).c_str() :
+							("Remove##TEAM_" + std::to_string(id)).c_str()))
+						{
+							if (std::find(friendly_teams.begin(), friendly_teams.end(), id) == friendly_teams.end())
+								friendly_teams.push_back(id);
+							else
+								friendly_teams.erase(std::find(friendly_teams.begin(), friendly_teams.end(), id));
+						}
+					}
+				}*/
+
+				EndTable();
+			}
+
+			EndTabItem();
+		}
+		ImGui::PopStyleColor();
+		EndTabBar();
+		End();
 	}
-
-
-	EndTabBar();
-	End();
 }
 bool ColorEdit44(const char* label, float col[4], ImGuiColorEditFlags flags)
 {
@@ -1203,6 +1293,8 @@ void main_window::draw_main_window() {
 				checkbox("Esp Enable", &settings::get_bool("esp_enable"));
 				checkbox("Players Info", &settings::get_bool("esp_info"));
 				combo("Box Type", &settings::get_int("esp_type"), text, IM_ARRAYSIZE(text));
+				if (button("Entity List", ImVec2(303, 25)))
+					drawentlist = !drawentlist;
 				//slider_int("ESP Draw distance", &settings::get_int("esp_dist"), 0, 50000,NULL,NULL);
 			}
 			else if (selectedtab == 3)

@@ -311,6 +311,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	auto bhop = [&]() {
 		auto local_player = get_local_player();
 		static bool should_fake = false;
+		if (local_player->get_move_type() == (int)e_move_type::noclip || local_player->get_move_type() == (int)e_move_type::ladder) return;
 		if (static bool last_jumped = false; !last_jumped && should_fake) {
 			should_fake = false;
 			cmd->buttons |= IN_JUMP;
