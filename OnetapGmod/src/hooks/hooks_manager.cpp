@@ -410,7 +410,11 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 
 		if (tr.m_pEnt) {
 			auto ent = (c_base_entity*)tr.m_pEnt;
-			if (ent->is_alive() && !ent->is_dormant()) globals::entitys_to_draw.push_back(ent->get_classname());
+			if (ent->is_alive() && !ent->is_dormant())
+				if (!globals::entitys_to_draw.exist(ent->get_classname()))
+					globals::entitys_to_draw.push_back(ent->get_classname());
+				else
+					globals::entitys_to_draw.remove(globals::entitys_to_draw.find(ent->get_classname()));
 		}
 	}
 

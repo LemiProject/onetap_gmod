@@ -34,7 +34,7 @@ bool input_system::is_key_pressed(int key, bool null_is_true)
 {
 	if (key >= 1024)
 		return false;
-	std::unique_lock l(input_mutex);
+	//std::unique_lock l(input_mutex);
 	
 	if (null_is_true)
 		return keys[key] || key == 0;
@@ -45,7 +45,7 @@ bool input_system::is_key_just_pressed(int key, bool null_is_true)
 {
 	if (key >= 1024)
 		return false;
-	std::unique_lock l(input_mutex);
+	//std::unique_lock l(input_mutex);
 	
 	if (null_is_true)
 		return (keys[key] && frames[key] == current_frame) || key == 0;
