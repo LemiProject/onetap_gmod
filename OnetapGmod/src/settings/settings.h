@@ -5,7 +5,7 @@
 
 #include "bind_system.h"
 
-#define IF_NOT_EXIST_CREATE_VAR_ FALSE
+#define IF_NOT_EXIST_CREATE_VAR_ false
 //#define IF_NOT_EXIST_CREATE_VAR_ TRUE
 
 namespace settings {

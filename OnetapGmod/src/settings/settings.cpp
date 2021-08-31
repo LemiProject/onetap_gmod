@@ -31,7 +31,7 @@ internal::settings_storage_type settings_storage {
 	{"third_person_distance", 50},
 	{"fake_lags_amount", 0},
 	{"autostrafe", false},
-	{"add_entity_bind", 0}
+	{"add_entity_bind", (uint32_t)0}
 
 };
 
