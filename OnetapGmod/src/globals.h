@@ -14,7 +14,8 @@ namespace globals {
 		inline c_view_setup proof_view_setup;
 		inline int chocked_packets;
 	}
-
+	inline std::vector<std::string> friends;
+	inline std::vector<int> friendly_teams;
 	class c_entity_list
 	{
 		std::vector<std::string> classes;
@@ -41,8 +42,12 @@ namespace globals {
 	inline bool glua;
 	inline bool thirdtemp;
 	inline uint32_t aimbotkey;
-	inline float aye[4]{255,255,255,1};
-	inline float aye1[4]{ 255,255,255,1};
+	inline uint32_t entitykey;
+	inline float colorfov[4]{255,255,255,1};
+	inline float colortarger[4]{ 255,255,255,1};
+	inline float colorespplayer[4]{ 255,255,255,1 };
+	inline float colorespentity[4]{ 255,255,255,1 };
+	inline float colorfriend[4]{ 0,255,0,1 };
 	inline uint32_t thirdpersonkey;
 	inline std::string lua;
 }

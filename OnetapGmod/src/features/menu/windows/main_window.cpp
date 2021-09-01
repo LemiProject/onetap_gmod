@@ -683,21 +683,6 @@ inline void set_tooltip(const std::string& text, ...)
 	}
 }
 
-std::vector<int> get_valid_players1(bool dormant) {
-	if (!interfaces::engine->is_in_game())
-		return {};
-
-	auto local_player = get_local_player();
-	if (!local_player)
-		return {};
-
-	std::vector<int> c;
-	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i) {
-		auto ent = get_entity_by_index(i);
-		if (ent && ent->is_alive() /*&& (!dormant ? !ent->is_dormant() : true)*/ && !local_player->is_equal(ent)) c.push_back(i);
-	}
-	return c;
-}
 void main_window::update_entity_list()
 {
 	//Update every 5 second
@@ -734,7 +719,7 @@ void main_window::update_entity_list()
 	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
 	{
 		auto* ent = get_entity_by_index(i);
-		if (!ent/* || interfaces::entity_list->get_client_entity_from_handle(ent->get_owner_entity_handle() != nullptr)*/)
+		if (!ent)
 			continue;
 
 		auto class_name = ent->get_classname();
@@ -753,7 +738,25 @@ void main_window::update_entity_list()
 		ent_list.push_back(class_name);
 	}
 
-	
+	//Add player to player list and jobs to teams_list
+	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
+	{
+		auto ply = get_player_by_index(i);
+		if (!ply || !ply->is_player())
+			continue;
+		auto sid = ply->get_steam_id();
+
+		if (sid.empty() || players_list.find(sid) != players_list.end())
+			continue;
+
+		players_list.emplace(sid, ply->get_name());
+
+		if (teams_list.find(ply->get_team_num()) != teams_list.end())
+			continue;
+
+		team_t tmp{ ply->get_team_name(), ply->get_team_color() };
+		teams_list.emplace(ply->get_team_num(), tmp);
+	}
 
 	is_entlists_updating = false;
 }
@@ -829,7 +832,7 @@ void draw_entity_list()
 			player_filter.Draw("Filter (inc,-exc)");
 			PopItemWidth();
 			SameLine();
-			//	Hotkey("Add##ADD_ENTITY_HOTKEY", &settings::binds["other::add_entity"], { GetContentRegionAvailWidth() / 1.5f, 0 });
+			Hotkey("Add##ADD_ENTITY_HOTKEY", &globals::entitykey, { GetContentRegionAvailWidth() / 1.5f, 0 });
 			if (IsItemHovered())
 			{
 				BeginTooltip();
@@ -844,7 +847,7 @@ void draw_entity_list()
 				TableSetupColumn("FRIEND");
 				TableHeadersRow();
 
-				/*if (!is_entlists_updating)
+				if (!is_entlists_updating)
 				{
 					for (auto [steam_id, name] : players_list)
 					{
@@ -858,18 +861,18 @@ void draw_entity_list()
 							TableNextColumn();
 
 
-							if (Button((std::find(friends.begin(), friends.end(), steam_id.c_str()) == friends.end()) ?
+							if (button((std::find(globals::friends.begin(), globals::friends.end(), steam_id.c_str()) == globals::friends.end()) ?
 								("Add##" + steam_id).c_str() :
-								("Remove##" + steam_id).c_str()))
+								("Remove##" + steam_id).c_str(), {0,0}))
 							{
-								if (std::find(friends.begin(), friends.end(), steam_id.c_str()) == friends.end())
-									friends.push_back(steam_id);
+								if (std::find(globals::friends.begin(), globals::friends.end(), steam_id.c_str()) == globals::friends.end())
+									globals::friends.push_back(steam_id);
 								else
-									friends.erase(std::find(friends.begin(), friends.end(), steam_id.c_str()));
+									globals::friends.erase(std::find(globals::friends.begin(), globals::friends.end(), steam_id.c_str()));
 							}
 						}
 					}
-				}*/
+				}
 				EndTable();
 			}
 
@@ -884,7 +887,7 @@ void draw_entity_list()
 				TableSetupColumn("Friendly");
 				TableHeadersRow();
 
-				/*if (!is_entlists_updating)
+				if (!is_entlists_updating)
 				{
 					for (auto [id, team] : teams_list)
 					{
@@ -892,17 +895,17 @@ void draw_entity_list()
 						TableNextColumn();
 						TextColored(team.color.get_vec4(), team.name.c_str());
 						TableNextColumn();
-						if (Button((std::find(friendly_teams.begin(), friendly_teams.end(), id) == friendly_teams.end()) ?
+						if (button((std::find(globals::friendly_teams.begin(), globals::friendly_teams.end(), id) == globals::friendly_teams.end()) ?
 							("Add##TEAM_" + std::to_string(id)).c_str() :
-							("Remove##TEAM_" + std::to_string(id)).c_str()))
+							("Remove##TEAM_" + std::to_string(id)).c_str(), {0,0}))
 						{
-							if (std::find(friendly_teams.begin(), friendly_teams.end(), id) == friendly_teams.end())
-								friendly_teams.push_back(id);
+							if (std::find(globals::friendly_teams.begin(), globals::friendly_teams.end(), id) == globals::friendly_teams.end())
+								globals::friendly_teams.push_back(id);
 							else
-								friendly_teams.erase(std::find(friendly_teams.begin(), friendly_teams.end(), id));
+								globals::friendly_teams.erase(std::find(globals::friendly_teams.begin(), globals::friendly_teams.end(), id));
 						}
 					}
-				}*/
+				}
 
 				EndTable();
 			}
@@ -1229,6 +1232,8 @@ void main_window::draw_main_window() {
 			if (selectedtab == 2) {
 				if (subtab("General", selectedsubtab == 0))
 					selectedsubtab = 0;
+				if (subtab("Colors", selectedsubtab == 1))
+					selectedsubtab = 1;
 			}
 			if (selectedtab == 3) {
 				if (subtab("General", selectedsubtab == 0))
@@ -1278,24 +1283,32 @@ void main_window::draw_main_window() {
 					checkbox("AimBot Fov Draw", &settings::get_bool("aimbot_fov_draw"));
 					ImGui::SameLine();
 					ImGui::SetCursorPosY(100);
-					ColorEdit44("", globals::aye, ImGuiColorEditFlags_NoInputs);
 					checkbox("Aimbot Draw Target", &settings::get_bool("aimbot_draw_target"));
 					ImGui::SameLine();
 					auto aa = ImGui::GetCursorPosY();
-					ImGui::SetCursorPosY(aa + 5);
-					ColorEdit44(" ", globals::aye1, ImGuiColorEditFlags_NoInputs);
 				}
 			}
 			else if(selectedtab==2)
 			{
-				static Wittchen::WitthcenEspStyleEditor g_style_editor;
-				static const char* text[]{ "filled", "border", "corner" };
-				slider_float("Esp Draw Distance", &settings::get_float("esp_dist"), 0, 20000, NULL, NULL);
-				checkbox("Esp Enable", &settings::get_bool("esp_enable"));
-				checkbox("Players Info", &settings::get_bool("esp_info"));
-				combo("Box Type", &settings::get_int("esp_type"), text, IM_ARRAYSIZE(text));
-				if (button("Entity List", ImVec2(303, 25)))
-					drawentlist = !drawentlist;
+				if (selectedsubtab == 0) 
+				{
+					static Wittchen::WitthcenEspStyleEditor g_style_editor;
+					static const char* text[]{ "border", "corner" };
+					slider_float("Esp Draw Distance", &settings::get_float("esp_dist"), 0, 20000, NULL, NULL);
+					checkbox("Esp Enable", &settings::get_bool("esp_enable"));
+					checkbox("Players Info", &settings::get_bool("esp_info"));
+					combo("Box Type", &settings::get_int("esp_type"), text, IM_ARRAYSIZE(text));
+					if (button("Entity List", ImVec2(303, 25)))
+						drawentlist = !drawentlist;
+				}
+				if (selectedsubtab == 1)
+				{
+					ColorEdit44("FOV", globals::colorfov, ImGuiColorEditFlags_NoInputs);
+					ColorEdit44("Target", globals::colortarger, ImGuiColorEditFlags_NoInputs);
+					ColorEdit44("Friend Esp", globals::colorfriend, ImGuiColorEditFlags_NoInputs);
+					ColorEdit44("Esp", globals::colorespplayer, ImGuiColorEditFlags_NoInputs);
+					ColorEdit44("Entity Esp", globals::colorespentity, ImGuiColorEditFlags_NoInputs);
+				}
 				//slider_int("ESP Draw distance", &settings::get_int("esp_dist"), 0, 50000,NULL,NULL);
 			}
 			else if (selectedtab == 3)

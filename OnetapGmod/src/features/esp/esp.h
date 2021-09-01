@@ -19,7 +19,7 @@ namespace esp {
 	};
 
 	enum class e_esp_text_position : uint32_t {top = 0, right, down, left};
-	enum class box_type : int {filled, border, corner};
+	enum class box_type : int {border, corner};
 	
 	struct esp_text_storage_t : std::array<std::pair<ImVec2, std::vector<esp_text_t>>, 4>{
 		std::unordered_map<uint64_t, esp_text_t> strings;
@@ -31,10 +31,12 @@ namespace esp {
 		esp_text_storage_t text_storage;
 		ImVec2 min, max;
 		float rounding;
-		int type = (int)box_type::filled;
+		int type = (int)box_type::border;
 		c_color color;
+		c_color colorentity;
+		c_color colorbox;
 		c_color border_color;
-		
+		c_color friendcolor;
 		static void get_absolute_position(const ImVec2& r);
 		ImVec2 get_screen_position(const ImVec2& pos) const;
 		

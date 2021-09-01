@@ -12,6 +12,7 @@
 #include "../menu/widgets/widgets.h"
 #include "../../settings/settings.h"
 #include "../../game_sdk/entities/c_base_weapon.h"
+#include <stdio.h>
 
 /// Formatter usage
 /// Player:
@@ -46,18 +47,23 @@ std::string format_text_for_entity(const std::string& str, c_base_entity* ent) {
 			s = replace_all(s, "%name", ply->get_name());
 			s = replace_all(s, "%health", std::to_string(ply->get_health()));
 			s = replace_all(s, "%team_name", ply->get_team_name());
+			s = replace_all(s, "%distance", "");
 			s = replace_all(s, "%user_group", ply->get_user_group());
 
 			return s;
 
 		}
-	} else {
+	} else 
+	{
 		if (settings::get_bool("esp_info"))
-		{
-			s = replace_all(s, "%name", ent->get_classname());
-			s = replace_all(s, "%health", std::to_string(ent->get_health()));
+		{	char dist[256];
 
+		    sprintf_s(dist, "%.1fm", (get_local_player()->get_origin() - ent->get_origin()).length() * 0.0254f);
+			s = replace_all(s, "%name", ent->get_classname());
+			if (ent->get_health() > 0)
+				s = replace_all(s, "%health", std::to_string(ent->get_health()));
 			s = replace_all(s, "%team_name", "");
+			s = replace_all(s, "%distance", dist);
 			s = replace_all(s, "%user_group", "");
 			s = replace_all(s, "%activeweapon", "");
 
@@ -255,33 +261,32 @@ void esp::draw_esp() {
 		if (p->is_player())
 		{
 			render_strings(box, p);
-			switch ((box_type)box.type) {
-			case box_type::filled:
-				directx_render::bordered_rect(box.min, box.max, box.color, box.rounding);
-				break;
-			case box_type::border:
-				directx_render::bordered_rect({ box.min.x - 1.f, box.min.y - 1.f }, { box.max.x + 1.f, box.max.y + 1.f }, box.border_color, box.rounding);
-				directx_render::bordered_rect({ box.min.x + 1.f, box.min.y + 1.f }, { box.max.x - 1.f, box.max.y - 1.f }, box.border_color, box.rounding);
-				directx_render::bordered_rect(box.min, box.max, box.color, box.rounding);
-				break;
-			case box_type::corner:
-				directx_render::corner_box(box.min, box.max, box.color);
+			auto sid = p->get_steam_id();
+			if (!sid.empty())
+			{
+					switch ((box_type)box.type) {
+
+					case box_type::border:
+						directx_render::bordered_rect({ box.min.x - 1.f, box.min.y - 1.f }, { box.max.x + 1.f, box.max.y + 1.f }, box.border_color, box.rounding);
+						directx_render::bordered_rect({ box.min.x + 1.f, box.min.y + 1.f }, { box.max.x - 1.f, box.max.y - 1.f }, box.border_color, box.rounding);
+						directx_render::bordered_rect(box.min, box.max, (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? box.friendcolor : box.colorbox, box.rounding);
+						break;
+					case box_type::corner:
+						directx_render::corner_box(box.min, box.max, (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? box.friendcolor : box.colorbox);
+					}
 			}
 		}
 		else if (!p->is_player() && globals::entitys_to_draw.exist(p->get_classname()))
 		{
 			render_strings(box, p);
 			switch ((box_type)box.type) {
-			case box_type::filled:
-				directx_render::bordered_rect(box.min, box.max, box.color, box.rounding);
-				break;
 			case box_type::border:
 				directx_render::bordered_rect({ box.min.x - 1.f, box.min.y - 1.f }, { box.max.x + 1.f, box.max.y + 1.f }, box.border_color, box.rounding);
 				directx_render::bordered_rect({ box.min.x + 1.f, box.min.y + 1.f }, { box.max.x - 1.f, box.max.y - 1.f }, box.border_color, box.rounding);
-				directx_render::bordered_rect(box.min, box.max, box.color, box.rounding);
+				directx_render::bordered_rect(box.min, box.max, box.colorentity, box.rounding);
 				break;
 			case box_type::corner:
-				directx_render::corner_box(box.min, box.max, box.color);
+				directx_render::corner_box(box.min, box.max, box.colorentity);
 			}
 		}
 	}

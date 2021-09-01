@@ -116,6 +116,11 @@ bool get_target(target_t& target)
 				continue;
 
 			if (tmp_shoot_pos.fov < tmp.shoot_pos.fov && tmp_shoot_pos.fov <= (float)settings::get_int("aimbot_fov")) {
+				if (std::find(globals::friends.begin(), globals::friends.end(), player->get_steam_id()) != globals::friends.end())
+					continue;
+				if (std::find(globals::friendly_teams.begin(), globals::friendly_teams.end(), player->get_team_num()) != globals::friendly_teams.end())
+					continue;
+
 				tmp.ply = player;
 				tmp.idx = i;
 				tmp.shoot_pos = tmp_shoot_pos;

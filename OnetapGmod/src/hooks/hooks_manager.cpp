@@ -505,8 +505,7 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				auto ratio = interfaces::engine->get_screen_aspect_ratio()/*(float)w / (float)h*/;
 				const auto screen_fov = atanf((ratio) * (0.75f) * tan(math::deg2rad(globals::game_info::view_setup.fov * 0.5f)));
 				const auto radius = tanf(math::deg2rad((float)settings::get_int("aimbot_fov"))) / tanf(screen_fov) * (w * 0.5f);
-				globals::aye[3] = 255.f;
-				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(globals::aye[0]*255.f, globals::aye[1]*255.f, globals::aye[2] * 255.f, globals::aye[3] * 255.f));
+				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(globals::colorfov[0]*255.f, globals::colorfov[1]*255.f, globals::colorfov[2] * 255.f, globals::colorfov[3] * 255.f));
 			}
 
 			if (settings::get_bool("aimbot_draw_target")) {
@@ -514,7 +513,7 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				if (target.is_valid()) {
 					c_vector origin;
 					if (game_utils::world_to_screen(target, origin)) {
-						directx_render::line({ ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetIO().DisplaySize.y }, (ImVec2)origin, c_color(globals::aye1[0] * 255.f, globals::aye1[1] * 255.f, globals::aye1[2] * 255.f, globals::aye1[3] * 255.f));
+						directx_render::line({ ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetIO().DisplaySize.y }, (ImVec2)origin, c_color(globals::colortarger[0] * 255.f, globals::colortarger[1] * 255.f, globals::colortarger[2] * 255.f, globals::colortarger[3] * 255.f));
 					}
 				}
 			}

@@ -72,7 +72,12 @@ public:
 		interfaces::engine->get_player_info(get_index(), &info);
 		return info.name;
 	}
-
+	std::string get_steam_id() const
+	{
+		player_info_s info;
+		interfaces::engine->get_player_info(get_index(), &info);
+		return info.guid;
+	}
 	bool is_admin()
 	{
 		auto str = get_user_group();

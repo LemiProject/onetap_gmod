@@ -4,7 +4,7 @@
 
 using namespace settings;
 
-internal::settings_storage_type settings_storage {
+internal::settings_storage_type settings_storage{
 	{"bhop", false},
 	{"aimbot", false},
 	{"aimbot_autofire", false},

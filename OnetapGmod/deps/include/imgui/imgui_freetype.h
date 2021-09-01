@@ -2,7 +2,6 @@
 // (headers)
 
 #pragma once
-//#pragma comment(lib, "freetype28.lib")
 #include "imgui.h"      // IMGUI_API
 
 // Forward declarations
