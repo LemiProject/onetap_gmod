@@ -180,5 +180,5 @@ namespace colors
 	inline const c_color blue_color = c_color( 0, 0, 255, 255);
     inline const c_color white_color = c_color(255, 255, 255, 255);
     inline const c_color yellow_color = c_color(255, 207, 64, 255);
-
+    inline c_color rp_color;
 }

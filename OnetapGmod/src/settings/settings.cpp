@@ -22,6 +22,8 @@ internal::settings_storage_type settings_storage{
 	{"esp_type",0},
 	{"esp_enable",false},
 	{"esp_info",false},
+	{"misc_freecam",false},
+	{"misc_freecam", 10.f},
 	{"aimbot_fov", 0},
 	{"esp_dist", 20000.f},
 	{"aimbot_bones", (int)e_bones::head},

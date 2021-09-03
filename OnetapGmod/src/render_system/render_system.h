@@ -14,7 +14,9 @@ namespace render_system {
 
 		inline std::array<ImFont*, 3> menu_font;
 		
-		inline ImFont* arial_font;
+		inline std::array<ImFont*, 3>  arial_font;
+
+		inline std::array<ImFont*, 3>  tahoma_font;
 	}
 
 	

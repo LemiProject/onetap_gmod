@@ -387,7 +387,6 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 
 	if (settings::get_bool("autostrafe"))
 		autosrafe();
-
 	if (aimbot::start_prediction(*cmd)) {
 		aimbot::run_aimbot(*cmd);
 
@@ -505,7 +504,7 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 				auto ratio = interfaces::engine->get_screen_aspect_ratio()/*(float)w / (float)h*/;
 				const auto screen_fov = atanf((ratio) * (0.75f) * tan(math::deg2rad(globals::game_info::view_setup.fov * 0.5f)));
 				const auto radius = tanf(math::deg2rad((float)settings::get_int("aimbot_fov"))) / tanf(screen_fov) * (w * 0.5f);
-				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(globals::colorfov[0]*255.f, globals::colorfov[1]*255.f, globals::colorfov[2] * 255.f, globals::colorfov[3] * 255.f));
+				directx_render::outlined_circle(ImVec2(w / 2, h / 2), radius, c_color(globals::colorfov[0] * 255.f, globals::colorfov[1] * 255.f, globals::colorfov[2] * 255.f, globals::colorfov[3] * 255.f));
 			}
 
 			if (settings::get_bool("aimbot_draw_target")) {
@@ -552,12 +551,12 @@ void override_view_hook::hook(i_client_mode* self, c_view_setup& view) {
 
 		interfaces::engine_trace->trace_ray(ray, MASK_SHOT, &f, &tr);
 		
-		if (abs((tr.endpos - tr.startpos).length()) >= 50.f) {
+		
 			should_reset_input_state = true;
 			interfaces::input->m_fCameraInThirdPerson = true;
 
 			view.origin = tr.endpos;
-		}
+		
 	} else if (should_reset_input_state) {
 		interfaces::input->m_fCameraInThirdPerson = false;
 		should_reset_input_state = false;

@@ -31,7 +31,7 @@ namespace settings {
 	inline t& get_var(var_id_t_non_copy name) {
 		if (!var_exist(name))
 			if (IF_NOT_EXIST_CREATE_VAR_)
-				internal::get_settings_storage()[name] = (t)0;
+				internal::get_settings_storage()[name] = 0;
 			else
 				throw std::exception(("Cannot find variable " + name).c_str());
 		try {

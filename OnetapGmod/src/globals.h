@@ -50,6 +50,7 @@ namespace globals {
 	inline float colorfriend[4]{ 0,255,0,1 };
 	inline uint32_t thirdpersonkey;
 	inline std::string lua;
+	
 }
 
 enum class e_bones : int {

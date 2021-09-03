@@ -56,14 +56,11 @@ std::string format_text_for_entity(const std::string& str, c_base_entity* ent) {
 	} else 
 	{
 		if (settings::get_bool("esp_info"))
-		{	char dist[256];
-
-		    sprintf_s(dist, "%.1fm", (get_local_player()->get_origin() - ent->get_origin()).length() * 0.0254f);
+		{
 			s = replace_all(s, "%name", ent->get_classname());
 			if (ent->get_health() > 0)
 				s = replace_all(s, "%health", std::to_string(ent->get_health()));
 			s = replace_all(s, "%team_name", "");
-			s = replace_all(s, "%distance", dist);
 			s = replace_all(s, "%user_group", "");
 			s = replace_all(s, "%activeweapon", "");
 
@@ -157,7 +154,7 @@ ImVec2 esp::c_esp_box::calc_text_position(const c_esp_box& box, esp_text_t& text
 	if (text.relative_position == (int)esp::e_esp_text_position::top) {
 		auto& last_position = last_positions[(int)esp::e_esp_text_position::top];
 		auto font_size = (text.size == -1 || text.size == 0 ) ? calc_font_size(box) : text.size;
-		auto text_size = render_system::fonts::nunito_font[2]->CalcTextSizeA(font_size, FLT_MAX, 0.f, text.text.c_str());
+		auto text_size = render_system::fonts::tahoma_font[2]->CalcTextSizeA(font_size, FLT_MAX, 0.f, text.text.c_str());
 		ImVec2 base_position = { box_size.x / 2.f, -(text_size.y / 2.f) };
 
 		ImVec2 position = { base_position.x, last_position.y != -1.f ? last_position.y - text_size.y : base_position.y };
@@ -172,7 +169,7 @@ ImVec2 esp::c_esp_box::calc_text_position(const c_esp_box& box, esp_text_t& text
 	if (text.relative_position == (int)esp::e_esp_text_position::right) {
 		auto& last_position = last_positions[(int)esp::e_esp_text_position::right];
 		auto font_size = (text.size == -1 || text.size == 0) ? calc_font_size(box) : text.size;
-		auto text_size = render_system::fonts::nunito_font[2]->CalcTextSizeA(font_size, FLT_MAX, 0.f, text.text.c_str());
+		auto text_size = render_system::fonts::tahoma_font[2]->CalcTextSizeA(font_size, FLT_MAX, 0.f, text.text.c_str());
 		ImVec2 base_position = { box_size.x + text_size.y / 2.f, 0 };
 		ImVec2 position = { base_position.x, last_position.y != -1.f ? last_position.y + text_size.y : base_position.y };
 
@@ -183,7 +180,7 @@ ImVec2 esp::c_esp_box::calc_text_position(const c_esp_box& box, esp_text_t& text
 	if (text.relative_position == (int)esp::e_esp_text_position::left) {
 		auto& last_position = last_positions[(int)esp::e_esp_text_position::left];
 		auto font_size = (text.size == -1 || text.size == 0) ? calc_font_size(box) : text.size;
-		auto text_size = render_system::fonts::nunito_font[2]->CalcTextSizeA(font_size, FLT_MAX, 0.f, text.text.c_str());
+		auto text_size = render_system::fonts::tahoma_font[2]->CalcTextSizeA(font_size, FLT_MAX, 0.f, text.text.c_str());
 		ImVec2 base_position = { -text_size.x - (text_size.y / 2.f), 0 };
 		ImVec2 position = { base_position.x, last_position.y != -1.f ? last_position.y + text_size.y : base_position.y };
 
@@ -194,7 +191,7 @@ ImVec2 esp::c_esp_box::calc_text_position(const c_esp_box& box, esp_text_t& text
 	if (text.relative_position == (int)esp::e_esp_text_position::down) {
 		auto& last_position = last_positions[(int)esp::e_esp_text_position::down];
 		auto font_size = (text.size == -1 || text.size == 0) ? calc_font_size(box) : text.size;
-		auto text_size = render_system::fonts::nunito_font[2]->CalcTextSizeA(font_size, FLT_MAX, 0.f, text.text.c_str());
+		auto text_size = render_system::fonts::tahoma_font[2]->CalcTextSizeA(font_size, FLT_MAX, 0.f, text.text.c_str());
 		ImVec2 base_position = { box_size.x / 2.f, box_size.y + (text_size.y / 2.f) };
 
 		ImVec2 position = { base_position.x, last_position.y != -1.f ? last_position.y + text_size.y : base_position.y };
@@ -232,7 +229,7 @@ void render_strings(esp::c_esp_box& box, c_base_entity* ent) {
 
 			auto position = esp::c_esp_box::calc_text_position(box, i.second, box.text_storage.last_positions);
 			const auto font_size = (i.second.size == -1 || i.second.size == 0) ? calc_font_size(box) : i.second.size;
-			directx_render::text(render_system::fonts::nunito_font[2], i.second.text, box.get_screen_position(position), font_size, i.second.color, i.second.flags);
+			directx_render::text(render_system::fonts::tahoma_font[2], i.second.text, box.get_screen_position(position), font_size, i.second.color, i.second.flags);
 		}
 	}
 }
@@ -264,6 +261,7 @@ void esp::draw_esp() {
 			auto sid = p->get_steam_id();
 			if (!sid.empty())
 			{
+				box.colorbox = p->get_team_color();
 					switch ((box_type)box.type) {
 
 					case box_type::border:

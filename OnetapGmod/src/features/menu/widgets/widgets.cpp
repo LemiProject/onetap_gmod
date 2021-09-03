@@ -169,7 +169,7 @@ c_color Wittchen::WitthcenEspStyleEditor::GetAutoColor(const std::string& name, 
 	{
 		return colors::yellow_color;
 	}
-	
+	colors::rp_color = player->get_team_color();
 	//TODO: IMPL OTHER
 
 	return colors::white_color;
@@ -216,7 +216,6 @@ void Wittchen::ApplyStyleToBox(esp::c_esp_box& box) {
 	box.type = g_style_editor.temp_box.type;
 	box.border_color = g_style_editor.temp_box.border_color;
 	box.colorentity = c_color(globals::colorespentity[0] * 255.f, globals::colorespentity[1] * 255.f, globals::colorespentity[2] * 255.f, globals::colorespentity[3] * 255.f);
-	box.colorbox = c_color(globals::colorespplayer[0] * 255.f, globals::colorespplayer[1] * 255.f, globals::colorespplayer[2] * 255.f, globals::colorespplayer[3] * 255.f);
 	box.friendcolor = c_color(globals::colorfriend[0] * 255.f, globals::colorfriend[1] * 255.f, globals::colorfriend[2] * 255.f, globals::colorfriend[3] * 255.f);
 	//text applying
 	box.text_storage.strings = g_style_editor.temp_box.text_storage.strings;
@@ -347,7 +346,7 @@ void Wittchen::DrawEspEditor() {
 
 			ImVec2 center_pos;
 			//auto font_size = text.size == -1 ? calc_font_size(box) : text.size;
-			auto text_size = render_system::fonts::nunito_font[2]->CalcTextSizeA(16.f, FLT_MAX, 0.f, player_name);
+			auto text_size = render_system::fonts::tahoma_font[2]->CalcTextSizeA(16.f, FLT_MAX, 0.f, player_name);
 
 			PushStyleVar(ImGuiStyleVar_FramePadding, { 0.f, 0.f });
 			PushStyleVar(ImGuiStyleVar_ItemSpacing, { 2.f, 2.f });
@@ -357,7 +356,7 @@ void Wittchen::DrawEspEditor() {
 			Dummy({ GetContentRegionAvail().x, text_size.y* getTopSize() }); //top
 			CustomiseEspTextDropTarget(0);
 			
-			Dummy({getLeftSize(render_system::fonts::nunito_font[2], 16.f), box_size.y }); SameLine(); //left
+			Dummy({getLeftSize(render_system::fonts::tahoma_font[2], 16.f), box_size.y }); SameLine(); //left
 			CustomiseEspTextDropTarget(3);
 			
 			InvisibleButton("BoxDummy", box_size); SameLine(); center_pos = GetItemRectMin(); //center
@@ -422,9 +421,9 @@ void Wittchen::DrawEspEditor() {
 				for (auto& i : temp_box.text_storage.strings) {
 					auto position = esp::c_esp_box::calc_text_position(temp_box, i.second, temp_box.text_storage.last_positions);
 					const auto font_size = (i.second.size == -1 || i.second.size == 0) ? 16.f : i.second.size;
-					auto text_size = render_system::fonts::nunito_font[2]->CalcTextSizeA(font_size, FLT_MAX, 0, i.second.text.c_str());
+					auto text_size = render_system::fonts::tahoma_font[2]->CalcTextSizeA(font_size, FLT_MAX, 0, i.second.text.c_str());
 					
-					renderEspText(i.second, render_system::fonts::nunito_font[2], font_size, temp_box.get_screen_position(position));
+					renderEspText(i.second, render_system::fonts::tahoma_font[2], font_size, temp_box.get_screen_position(position));
 
 					auto pos = position;
 					if (i.second.flags & directx_render::e_font_flags::font_centered_x)
@@ -445,7 +444,7 @@ void Wittchen::DrawEspEditor() {
 						            ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar |
 						            ImGuiColorEditFlags_AlphaPreview);
 
-						SliderFloat(("Text size##" + id).c_str(), &element.size, 0.f, render_system::fonts::nunito_font[2]->FontSize, "%.0f", 1.f);
+						SliderFloat(("Text size##" + id).c_str(), &element.size, 0.f, render_system::fonts::tahoma_font[2]->FontSize, "%.0f", 1.f);
 						
 						EndPopup();
 					}

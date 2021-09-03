@@ -760,163 +760,7 @@ void main_window::update_entity_list()
 
 	is_entlists_updating = false;
 }
-bool drawentlist;
 
-void draw_entity_list()
-{
-	using namespace ImGui;
-	if (drawentlist) {
-		int w, h;
-		interfaces::engine->get_screen_size(w, h);
-		ImGui::SetNextWindowSize({ w / 2.f, h / 2.f }, ImGuiCond_FirstUseEver);
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(33 / 255.f, 33 / 255.f, 38 / 255.f, 180 / 255.f));
-
-		Begin("Target list##SUBWINDOW");
-
-		BeginTabBar("##ENTITY_LIST_TAB_BAR");
-
-		if (BeginTabItem("Entities"))
-		{
-			static ImGuiTextFilter entity_filter;
-
-			PushItemWidth(GetContentRegionAvailWidth() - (GetContentRegionAvailWidth() / 2.0f));
-			entity_filter.Draw("Filter (inc,-exc)");
-			PopItemWidth();
-			SameLine();
-			
-			Hotkey("Add##ADD_ENTITY_HOTKEY", &settings::get_var<uint32_t>("add_entity_bind"), { GetContentRegionAvailWidth() / 1.5f, 0 });
-			if (IsItemHovered())
-			{
-				BeginTooltip();
-				Text("Add the entity you are looking at");
-				EndTooltip();
-			}
-
-			if (ImGui::BeginTable("entities_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
-			{
-				ImGui::TableSetupColumn("Name");
-				ImGui::TableSetupColumn("ESP");
-				ImGui::TableHeadersRow();
-
-				if (!is_entlists_updating)
-				{
-					for (auto class_name : ent_list.data())
-					{
-						if (!entity_filter.PassFilter(class_name.c_str()))
-							continue;
-
-						ImGui::TableNextRow();
-						ImGui::TableNextColumn();
-						ImGui::Text("%s", class_name.c_str());
-						ImGui::TableNextColumn();
-						if (button(globals::entitys_to_draw.exist(class_name) ? (std::string("Remove##ENTS_TABLE") + class_name).c_str() : (std::string("Add##ENTS_TABLE") + class_name).c_str(), { 0,0 }))
-						{
-							if (globals::entitys_to_draw.exist(class_name))
-								globals::entitys_to_draw.remove(globals::entitys_to_draw.find(class_name));
-							else
-								globals::entitys_to_draw.push_back(class_name);
-						}
-
-					}
-				}
-				ImGui::EndTable();
-			}
-
-			EndTabItem();
-		}
-		if (BeginTabItem("Players"))
-		{
-			static ImGuiTextFilter player_filter;
-
-			PushItemWidth(GetContentRegionAvailWidth() - (GetContentRegionAvailWidth() / 2.3f));
-			player_filter.Draw("Filter (inc,-exc)");
-			PopItemWidth();
-			SameLine();
-			Hotkey("Add##ADD_ENTITY_HOTKEY", &globals::entitykey, { GetContentRegionAvailWidth() / 1.5f, 0 });
-			if (IsItemHovered())
-			{
-				BeginTooltip();
-				Text("Add the entity you are looking at");
-				EndTooltip();
-			}
-
-			if (BeginTable("players_table", 3, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
-			{
-				TableSetupColumn("Name");
-				TableSetupColumn("STEAM-ID");
-				TableSetupColumn("FRIEND");
-				TableHeadersRow();
-
-				if (!is_entlists_updating)
-				{
-					for (auto [steam_id, name] : players_list)
-					{
-						if (player_filter.PassFilter(steam_id.c_str()) || player_filter.PassFilter(name.c_str()))
-						{
-							TableNextRow();
-							TableNextColumn();
-							Text(name.c_str());
-							TableNextColumn();
-							Text(steam_id.c_str());
-							TableNextColumn();
-
-
-							if (button((std::find(globals::friends.begin(), globals::friends.end(), steam_id.c_str()) == globals::friends.end()) ?
-								("Add##" + steam_id).c_str() :
-								("Remove##" + steam_id).c_str(), {0,0}))
-							{
-								if (std::find(globals::friends.begin(), globals::friends.end(), steam_id.c_str()) == globals::friends.end())
-									globals::friends.push_back(steam_id);
-								else
-									globals::friends.erase(std::find(globals::friends.begin(), globals::friends.end(), steam_id.c_str()));
-							}
-						}
-					}
-				}
-				EndTable();
-			}
-
-			EndTabItem();
-		}
-
-		if (BeginTabItem("Teams"))
-		{
-			if (BeginTable("teams_table", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_BordersOuter))
-			{
-				TableSetupColumn("Name");
-				TableSetupColumn("Friendly");
-				TableHeadersRow();
-
-				if (!is_entlists_updating)
-				{
-					for (auto [id, team] : teams_list)
-					{
-						TableNextRow();
-						TableNextColumn();
-						TextColored(team.color.get_vec4(), team.name.c_str());
-						TableNextColumn();
-						if (button((std::find(globals::friendly_teams.begin(), globals::friendly_teams.end(), id) == globals::friendly_teams.end()) ?
-							("Add##TEAM_" + std::to_string(id)).c_str() :
-							("Remove##TEAM_" + std::to_string(id)).c_str(), {0,0}))
-						{
-							if (std::find(globals::friendly_teams.begin(), globals::friendly_teams.end(), id) == globals::friendly_teams.end())
-								globals::friendly_teams.push_back(id);
-							else
-								globals::friendly_teams.erase(std::find(globals::friendly_teams.begin(), globals::friendly_teams.end(), id));
-						}
-					}
-				}
-
-				EndTable();
-			}
-
-			EndTabItem();
-		}
-		ImGui::PopStyleColor();
-		EndTabBar();
-		End();
-	}
-}
 bool ColorEdit44(const char* label, float col[4], ImGuiColorEditFlags flags)
 {
 	ImGuiWindow* window = GetCurrentWindow();
@@ -1141,7 +985,6 @@ void read_file(std::string& out, const std::string& path)
 	out = file_content;
 }	
 void main_window::draw_main_window() {
-	draw_entity_list();
 	auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	auto aaa = render_system::get_device();
 	if (tImage == nullptr)
@@ -1192,6 +1035,10 @@ void main_window::draw_main_window() {
 			if (tab("Misc", ICON_FA_COG, selectedtab == 3))
 				selectedtab = 3;
 			ImGui::SameLine();
+				ImGui::SameLine();
+			if (tab("Settings", ICON_FA_WRENCH, selectedtab == 5))
+				selectedtab = 5;
+			ImGui::SameLine();
 			if (tab("Credits", ICON_FA_WHEELCHAIR, selectedtab == 4))
 				selectedtab = 4;	
 			
@@ -1238,6 +1085,8 @@ void main_window::draw_main_window() {
 			if (selectedtab == 3) {
 				if (subtab("General", selectedsubtab == 0))
 					selectedsubtab = 0;
+				if (subtab("Target", selectedsubtab == 1))
+					selectedsubtab = 1;
 				if (subtab("Lua", selectedsubtab == 2))
 					selectedsubtab = 2;
 			}
@@ -1283,9 +1132,12 @@ void main_window::draw_main_window() {
 					checkbox("AimBot Fov Draw", &settings::get_bool("aimbot_fov_draw"));
 					ImGui::SameLine();
 					ImGui::SetCursorPosY(100);
+					ColorEdit44("", globals::colorfov, ImGuiColorEditFlags_NoInputs);
 					checkbox("Aimbot Draw Target", &settings::get_bool("aimbot_draw_target"));
 					ImGui::SameLine();
 					auto aa = ImGui::GetCursorPosY();
+					ImGui::SetCursorPosY(aa + 5);
+					ColorEdit44(" ", globals::colortarger, ImGuiColorEditFlags_NoInputs);
 				}
 			}
 			else if(selectedtab==2)
@@ -1298,13 +1150,10 @@ void main_window::draw_main_window() {
 					checkbox("Esp Enable", &settings::get_bool("esp_enable"));
 					checkbox("Players Info", &settings::get_bool("esp_info"));
 					combo("Box Type", &settings::get_int("esp_type"), text, IM_ARRAYSIZE(text));
-					if (button("Entity List", ImVec2(303, 25)))
-						drawentlist = !drawentlist;
+					
 				}
 				if (selectedsubtab == 1)
 				{
-					ColorEdit44("FOV", globals::colorfov, ImGuiColorEditFlags_NoInputs);
-					ColorEdit44("Target", globals::colortarger, ImGuiColorEditFlags_NoInputs);
 					ColorEdit44("Friend Esp", globals::colorfriend, ImGuiColorEditFlags_NoInputs);
 					ColorEdit44("Esp", globals::colorespplayer, ImGuiColorEditFlags_NoInputs);
 					ColorEdit44("Entity Esp", globals::colorespentity, ImGuiColorEditFlags_NoInputs);
@@ -1323,6 +1172,82 @@ void main_window::draw_main_window() {
 					slider_int("Custom Aspect Ratio", &settings::get_int("custom_aspect_ratio"), 0, 180, NULL, NULL);
 					slider_int("ThirdPerson Distance", &settings::get_int("third_person_distance"), 0, 180, NULL, NULL);
 					Hotkey("ThirdPerson Key", &globals::thirdpersonkey);
+				}
+				else if (selectedsubtab == 1)
+				{
+					static std::string curnamet = "Teams";
+					if (begincombo("Teams", curnamet.c_str(), ImGuiComboFlags_HeightSmall))
+					{
+						for (auto [id, team] : teams_list)
+						{
+							if (ImGui::Selectable(team.name.c_str(), std::find(globals::friendly_teams.begin(), globals::friendly_teams.end(), id) != globals::friendly_teams.end(), ImGuiSelectableFlags_DontClosePopups))
+							{
+								curnamet = team.name;
+								if (std::find(globals::friendly_teams.begin(), globals::friendly_teams.end(), id) == globals::friendly_teams.end())
+									globals::friendly_teams.push_back(id);
+								else
+									globals::friendly_teams.erase(std::find(globals::friendly_teams.begin(), globals::friendly_teams.end(), id));
+							}
+						}
+						ImGui::EndCombo();
+					}
+					static std::string curnamee = "Entities";
+					static ImGuiTextFilter entity_filter;
+
+					if (begincombo("Entities", curnamee.c_str(), ImGuiComboFlags_HeightSmall))
+					{
+						PushItemWidth(GetContentRegionAvailWidth() - (GetContentRegionAvailWidth() / 2.0f));
+
+						entity_filter.Draw("");
+
+						PopItemWidth();
+						for (auto class_name : ent_list.data())
+						{
+
+							if (!entity_filter.PassFilter(class_name.c_str()))
+								continue;
+
+							if (ImGui::Selectable(class_name.c_str(), globals::entitys_to_draw.exist(class_name), ImGuiSelectableFlags_DontClosePopups))
+							{
+								curnamee = class_name.c_str();
+								if (globals::entitys_to_draw.exist(class_name))
+									globals::entitys_to_draw.remove(globals::entitys_to_draw.find(class_name));
+								else
+									globals::entitys_to_draw.push_back(class_name);
+							}
+						}
+
+						ImGui::EndCombo();
+					}
+					static std::string curnamep = "Players";
+					static ImGuiTextFilter player_filter;
+
+					if (begincombo("Players", curnamep.c_str(), ImGuiComboFlags_HeightSmall))
+					{
+						PushItemWidth(GetContentRegionAvailWidth() - (GetContentRegionAvailWidth() / 2.0f));
+
+						player_filter.Draw("");
+
+						PopItemWidth();
+						for (auto [steam_id, name] : players_list)
+						{
+							if (player_filter.PassFilter(steam_id.c_str()) || player_filter.PassFilter(name.c_str()))
+							{
+								if (ImGui::Selectable(name.c_str(), std::find(globals::friends.begin(), globals::friends.end(), steam_id.c_str()) != globals::friends.end(), ImGuiSelectableFlags_DontClosePopups))
+								{
+									curnamep = name;
+
+									if (std::find(globals::friends.begin(), globals::friends.end(), steam_id.c_str()) == globals::friends.end())
+										globals::friends.push_back(steam_id);
+									else
+										globals::friends.erase(std::find(globals::friends.begin(), globals::friends.end(), steam_id.c_str()));
+								}
+
+							}
+						}
+
+						ImGui::EndCombo();
+					}
 				}
 				else if (selectedsubtab == 2)
 				{
