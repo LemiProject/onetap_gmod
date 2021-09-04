@@ -440,6 +440,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	lua_futures::run_all_code();
 
 	send_packets = (cmd->buttons & IN_ATTACK) ? true : send_packets;
+	send_packets = (globals::game_info::chocked_packets > 21) ? true : send_packets;
 	globals::game_info::chocked_packets = !send_packets ? globals::game_info::chocked_packets + 1 : 0;
 	
 	return false;
