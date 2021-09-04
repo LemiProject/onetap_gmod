@@ -20,12 +20,24 @@ internal::settings_storage_type settings_storage{
 	{"fake_duck", false},
 	{"aimbot_key",0},
 	{"esp_type",0},
-	{"esp_enable",false},
-	{"esp_info",false},
+	{"esp_type_ent",0},
+	{"esp_entitie_enable",false},
+	{"esp_player_enable",false},
+	{"esp_player_info",false},
+	{"esp_player_hp",false},
+	{"esp_player_name",false},
+	{"esp_player_group",false},
+	{"esp_player_weapon",false},
+	{"esp_player_team",false},
+	{"esp_entitie_info",false},
 	{"misc_freecam",false},
+	{"esp_entitie_name",false},
+	{"esp_entitie_hp",false},
+	{"esp_entitie_dist",false},
 	{"misc_freecam", 10.f},
 	{"aimbot_fov", 0},
 	{"esp_dist", 20000.f},
+	{"esp_dist_ent", 20000.f},
 	{"aimbot_bones", (int)e_bones::head},
 	{"custom_viewmodel_fov", 0},
 	{"custom_fov", 0},
@@ -33,7 +45,9 @@ internal::settings_storage_type settings_storage{
 	{"third_person_distance", 50},
 	{"fake_lags_amount", 0},
 	{"autostrafe", false},
-	{"add_entity_bind", (uint32_t)0}
+	{"add_entity_bind", (uint32_t)0},
+	{"menu_key", (uint32_t)VK_INSERT},
+	{"panic_key", (uint32_t)VK_HOME}
 
 };
 

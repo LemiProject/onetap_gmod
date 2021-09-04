@@ -1077,9 +1077,9 @@ void main_window::draw_main_window() {
 					selectedsubtab = 0;
 			}
 			if (selectedtab == 2) {
-				if (subtab("General", selectedsubtab == 0))
+				if (subtab("Players", selectedsubtab == 0))
 					selectedsubtab = 0;
-				if (subtab("Colors", selectedsubtab == 1))
+				if (subtab("Entities", selectedsubtab == 1))
 					selectedsubtab = 1;
 			}
 			if (selectedtab == 3) {
@@ -1144,19 +1144,32 @@ void main_window::draw_main_window() {
 			{
 				if (selectedsubtab == 0) 
 				{
-					static Wittchen::WitthcenEspStyleEditor g_style_editor;
 					static const char* text[]{ "border", "corner" };
-					slider_float("Esp Draw Distance", &settings::get_float("esp_dist"), 0, 20000, NULL, NULL);
-					checkbox("Esp Enable", &settings::get_bool("esp_enable"));
-					checkbox("Players Info", &settings::get_bool("esp_info"));
+					slider_float("Distance", &settings::get_float("esp_dist"), 0, 20000, NULL, NULL);
+					checkbox("Box", &settings::get_bool("esp_player_enable"));
+					checkbox("HP", &settings::get_bool("esp_player_hp"));
+					checkbox("Name", &settings::get_bool("esp_player_name"));
+					checkbox("UserGroup", &settings::get_bool("esp_player_group"));
+					checkbox("Weapon", &settings::get_bool("esp_player_weapon"));
+					checkbox("Job", &settings::get_bool("esp_player_team"));
+					ColorEdit44("Friend Esp Color", globals::colorfriend, ImGuiColorEditFlags_NoInputs);
 					combo("Box Type", &settings::get_int("esp_type"), text, IM_ARRAYSIZE(text));
-					
 				}
 				if (selectedsubtab == 1)
 				{
-					ColorEdit44("Friend Esp", globals::colorfriend, ImGuiColorEditFlags_NoInputs);
-					ColorEdit44("Esp", globals::colorespplayer, ImGuiColorEditFlags_NoInputs);
-					ColorEdit44("Entity Esp", globals::colorespentity, ImGuiColorEditFlags_NoInputs);
+					static const char* text[]{ "border", "corner" };
+
+					slider_float("Distance", &settings::get_float("esp_dist_ent"), 0, 20000, NULL, NULL);
+					checkbox("Box", &settings::get_bool("esp_entitie_enable"));
+					SameLine();
+					auto aa = ImGui::GetCursorPosY();
+					ImGui::SetCursorPosY(aa + 5);
+					ColorEdit44("", globals::colorespentity, ImGuiColorEditFlags_NoInputs);
+					checkbox("Name", &settings::get_bool("esp_entitie_name"));
+					checkbox("HP", &settings::get_bool("esp_entitie_hp"));
+					checkbox("Distance", &settings::get_bool("esp_entitie_dist"));
+					combo("Box Type", &settings::get_int("esp_type_ent"), text, IM_ARRAYSIZE(text));
+
 				}
 				//slider_int("ESP Draw distance", &settings::get_int("esp_dist"), 0, 50000,NULL,NULL);
 			}
@@ -1165,7 +1178,7 @@ void main_window::draw_main_window() {
 				if (selectedsubtab == 0) {
 					checkbox("Bunnyhop", &settings::get_bool("bhop"));
 					checkbox("AutoStrafe", &settings::get_bool("autostrafe"));
-					checkbox("FixMovement", &settings::get_bool("fixmovement"));
+					//checkbox("FixMovement", &settings::get_bool("fixmovement"));
 					checkbox("ThirdPerson", &settings::get_bool("third_person"));
 					slider_int("Custom Viewmodel Fov", &settings::get_int("custom_viewmodel_fov"), 0, 180, NULL, NULL);
 					slider_int("Custom Fov", &settings::get_int("custom_fov"), 0, 180, NULL, NULL);
@@ -1175,6 +1188,8 @@ void main_window::draw_main_window() {
 				}
 				else if (selectedsubtab == 1)
 				{
+					Hotkey("KeyBind Add", &settings::get_var<uint32_t>("add_entity_bind"));
+
 					static std::string curnamet = "Teams";
 					if (begincombo("Teams", curnamet.c_str(), ImGuiComboFlags_HeightSmall))
 					{
@@ -1247,7 +1262,9 @@ void main_window::draw_main_window() {
 						}
 
 						ImGui::EndCombo();
+
 					}
+
 				}
 				else if (selectedsubtab == 2)
 				{
@@ -1314,6 +1331,13 @@ void main_window::draw_main_window() {
 			{
 				ImGui::Text("t.me/urbanichka");
 				ImGui::Text("KIRAT23 & voidptr_t");
+			}
+			else if (selectedtab == 5)
+			{
+			Hotkey("Menu ", &settings::get_var<uint32_t>("menu_key"));
+			Hotkey("Panic", &settings::get_var<uint32_t>("panic_key"));
+			if (button("Unload", ImVec2(303, 25)))
+				globals::unload = true;
 			}
 		}
 		ImGui::EndGroup();

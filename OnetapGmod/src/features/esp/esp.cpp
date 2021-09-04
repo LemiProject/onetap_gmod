@@ -34,38 +34,48 @@ std::string format_text_for_entity(const std::string& str, c_base_entity* ent) {
 	auto s = str;
 	if (ent->is_player()) {
 		auto ply = (c_base_player*)ent;
-		if (settings::get_bool("esp_info"))
-		{
+		
 			auto weapon = ply->get_active_weapon();
 			if (weapon)
 			{
 				auto weapon_name = weapon->get_print_name();
 				if (!weapon_name.c_str())
 					weapon_name = "None";
-				s = replace_all(s, "%activeweapon", weapon_name);
+				if (settings::get_bool("esp_player_weapon"))
+					s = replace_all(s, "%activeweapon", weapon_name);
 			}
-			s = replace_all(s, "%name", ply->get_name());
-			s = replace_all(s, "%health", std::to_string(ply->get_health()));
-			s = replace_all(s, "%team_name", ply->get_team_name());
+			if (settings::get_bool("esp_player_name"))
+				s = replace_all(s, "%name", ply->get_name());
+			if (settings::get_bool("esp_player_hp"))
+				s = replace_all(s, "%health", std::to_string(ply->get_health()));
+			if (settings::get_bool("esp_player_team"))
+				s = replace_all(s, "%team_name", ply->get_team_name());
+			if (settings::get_bool("esp_player_group"))
+				s = replace_all(s, "%user_group", ply->get_user_group());
 			s = replace_all(s, "%distance", "");
-			s = replace_all(s, "%user_group", ply->get_user_group());
 
 			return s;
 
-		}
-	} else 
+		
+	} 
+	else if(!ent->is_player())
 	{
-		if (settings::get_bool("esp_info"))
-		{
-			s = replace_all(s, "%name", ent->get_classname());
-			if (ent->get_health() > 0)
+		
+			char dist[256];
+			if (settings::get_bool("esp_entitie_dist")) {
+				sprintf_s(dist, "%.1fm", (get_local_player()->get_origin() - ent->get_origin()).length() * 0.0254f);
+				s = replace_all(s, "%distance", dist);
+			}
+			if (settings::get_bool("esp_entitie_name"))
+				s = replace_all(s, "%name", ent->get_classname());
+			if (ent->get_health() > 0&& settings::get_bool("esp_entitie_hp"))
 				s = replace_all(s, "%health", std::to_string(ent->get_health()));
 			s = replace_all(s, "%team_name", "");
 			s = replace_all(s, "%user_group", "");
 			s = replace_all(s, "%activeweapon", "");
 
 			return s;
-		}
+		
 	}
 	return "";
 }
@@ -237,17 +247,16 @@ void render_strings(esp::c_esp_box& box, c_base_entity* ent) {
 
 
 void esp::draw_esp() {
-	if (!settings::get_bool("esp_enable"))
-		return;
+	
 	
 	if (!interfaces::engine->is_in_game())
 		return;
-
+	if (globals::panic)
+		return;
 	for (auto i : game_utils::get_valid_entities(true)) {
 		auto p = get_player_by_index(i);
 
-		if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_float("esp_dist"))
-			continue;
+		
 
 		c_esp_box box;
 		if (!c_esp_box::calc_box(p, box))
@@ -257,35 +266,46 @@ void esp::draw_esp() {
 
 		if (p->is_player())
 		{
-			render_strings(box, p);
-			auto sid = p->get_steam_id();
-			if (!sid.empty())
-			{
-				box.colorbox = p->get_team_color();
-					switch ((box_type)box.type) {
+			if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_float("esp_dist"))
+				continue;
+				render_strings(box, p);
+				auto sid = p->get_steam_id();
+				if (!sid.empty())
+				{
+					box.colorbox = p->get_team_color();
+					if (settings::get_bool("esp_player_enable")) {
+						switch ((box_type)box.type) {
 
+						case box_type::border:
+							directx_render::bordered_rect({ box.min.x - 1.f, box.min.y - 1.f }, { box.max.x + 1.f, box.max.y + 1.f }, box.border_color, box.rounding);
+							directx_render::bordered_rect({ box.min.x + 1.f, box.min.y + 1.f }, { box.max.x - 1.f, box.max.y - 1.f }, box.border_color, box.rounding);
+							directx_render::bordered_rect(box.min, box.max, (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? box.friendcolor : box.colorbox, box.rounding);
+							break;
+						case box_type::corner:
+							directx_render::corner_box(box.min, box.max, (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? box.friendcolor : box.colorbox);
+						}
+					}
+				}
+			
+		}
+		else if (!p->is_player()&&globals::entitys_to_draw.exist(p->get_classname()))
+		{
+			if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_float("esp_dist_ent"))
+				continue;
+			box.type = settings::get_int("esp_type_ent");
+			box.colorbox = c_color(globals::colorespentity[0]*255.f, globals::colorespentity[1] * 255.f, globals::colorespentity[2] * 255.f);
+				render_strings(box, p);
+				if (settings::get_bool("esp_entitie_enable")) {
+					switch ((box_type)box.type) {
 					case box_type::border:
 						directx_render::bordered_rect({ box.min.x - 1.f, box.min.y - 1.f }, { box.max.x + 1.f, box.max.y + 1.f }, box.border_color, box.rounding);
 						directx_render::bordered_rect({ box.min.x + 1.f, box.min.y + 1.f }, { box.max.x - 1.f, box.max.y - 1.f }, box.border_color, box.rounding);
-						directx_render::bordered_rect(box.min, box.max, (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? box.friendcolor : box.colorbox, box.rounding);
+						directx_render::bordered_rect(box.min, box.max, box.colorentity, box.rounding);
 						break;
 					case box_type::corner:
-						directx_render::corner_box(box.min, box.max, (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? box.friendcolor : box.colorbox);
+						directx_render::corner_box(box.min, box.max, box.colorentity);
 					}
-			}
-		}
-		else if (!p->is_player() && globals::entitys_to_draw.exist(p->get_classname()))
-		{
-			render_strings(box, p);
-			switch ((box_type)box.type) {
-			case box_type::border:
-				directx_render::bordered_rect({ box.min.x - 1.f, box.min.y - 1.f }, { box.max.x + 1.f, box.max.y + 1.f }, box.border_color, box.rounding);
-				directx_render::bordered_rect({ box.min.x + 1.f, box.min.y + 1.f }, { box.max.x - 1.f, box.max.y - 1.f }, box.border_color, box.rounding);
-				directx_render::bordered_rect(box.min, box.max, box.colorentity, box.rounding);
-				break;
-			case box_type::corner:
-				directx_render::corner_box(box.min, box.max, box.colorentity);
-			}
+				}
 		}
 	}
 }

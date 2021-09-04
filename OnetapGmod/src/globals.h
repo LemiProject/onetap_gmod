@@ -35,7 +35,7 @@ namespace globals {
 	};
 
 	inline c_entity_list entitys_to_draw;
-
+	inline bool unload;
 	inline bool aimbotenable;
 	inline bool aimbot_autofire;
 	inline uint32_t fakelagkey;
@@ -43,11 +43,12 @@ namespace globals {
 	inline bool thirdtemp;
 	inline uint32_t aimbotkey;
 	inline uint32_t entitykey;
+	inline bool panic;
 	inline float colorfov[4]{255,255,255,1};
 	inline float colortarger[4]{ 255,255,255,1};
 	inline float colorespplayer[4]{ 255,255,255,1 };
 	inline float colorespentity[4]{ 255,255,255,1 };
-	inline float colorfriend[4]{ 0,255,0,1 };
+	inline float colorfriend[4]{ 0.f, 1.f*2.5f, 0.646288f*255.f, 1.00f*255.f };
 	inline uint32_t thirdpersonkey;
 	inline std::string lua;
 	

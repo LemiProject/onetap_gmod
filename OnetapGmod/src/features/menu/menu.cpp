@@ -21,6 +21,10 @@ void menu::initialize_menu() {
 }
 
 void menu::draw_menu() {
+	if (globals::panic) {
+		ImGui::GetIO().MouseDrawCursor = false;
+		return;
+	}
 	if (menu_is_open())
 	{
 		if (!interfaces::surface->is_cursor_visible())

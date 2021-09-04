@@ -227,6 +227,7 @@ void hooks_manager::init() {
 }
 
 void hooks_manager::shutdown() {
+	kiero::shutdown();
 	minpp->unhook();
 	minpp.reset();
 
@@ -401,7 +402,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	cmd->viewangles.normalize();
 	original(interfaces::client_mode, frame_time, cmd);
 
-	if (input_system::is_key_just_pressed(settings::get_var<uint32_t>("add_entity_bind"))) {
+	if (GetAsyncKeyState(settings::get_var<uint32_t>("add_entity_bind"))&1) {
 		q_angle ang; interfaces::engine->get_view_angles(ang);
 
 		trace_t tr;
@@ -409,11 +410,24 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 
 		if (tr.m_pEnt) {
 			auto ent = (c_base_entity*)tr.m_pEnt;
-			if (ent->is_alive() && !ent->is_dormant())
-				if (!globals::entitys_to_draw.exist(ent->get_classname()))
-					globals::entitys_to_draw.push_back(ent->get_classname());
+			if (ent->is_player()) {
+				c_base_player* ply = (c_base_player*)ent;
+				if (std::find(globals::friends.begin(), globals::friends.end(), ply->get_steam_id()) ==
+					globals::friends.end())
+					globals::friends.push_back(ply->get_steam_id());
 				else
-					globals::entitys_to_draw.remove(globals::entitys_to_draw.find(ent->get_classname()));
+					globals::friends.erase(std::find(globals::friends.begin(),
+						globals::friends.end(), ply->get_steam_id()));
+			}
+			else {
+				if (ent->get_classname().find("worldspawn") == std::string::npos) {
+					if (globals::entitys_to_draw.exist(ent->get_classname()))
+						globals::entitys_to_draw.remove(
+							globals::entitys_to_draw.find(ent->get_classname()));
+					else
+						globals::entitys_to_draw.push_back(ent->get_classname());
+				}
+			}
 		}
 	}
 
@@ -495,7 +509,8 @@ auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, b
 	if (const std::string panel_name = interfaces::panel->get_name(panel); panel_name == "FocusOverlayPanel") {
 		static auto numm = 0;
 		numm++;
-
+		if (globals::panic)
+			return;
 		directx_render::render_surface([&]() {
 			esp::draw_esp();
 
@@ -528,18 +543,18 @@ void override_view_hook::hook(i_client_mode* self, c_view_setup& view) {
 		is_proof_inited = true;
 	}
 	
-	if (auto fov = settings::get_int("custom_fov"); fov > 0) {
+	if (auto fov = settings::get_int("custom_fov"); fov > 0 && !globals::panic) {
 		view.fov = static_cast<float>(fov);
 	}
 
-	if (settings::get_bool("norecoil") || settings::get_bool("third_person")) {
+	if (settings::get_bool("norecoil") || settings::get_bool("third_person") && !globals::panic) {
 		view.angles -= get_local_player()->get_view_punch_angles();
 	}
 
 	static bool should_reset_input_state;
 	if (GetAsyncKeyState(globals::thirdpersonkey)&1)
 		globals::thirdtemp = !globals::thirdtemp;
-	if (settings::get_bool("third_person") && globals::thirdtemp) {
+	if (settings::get_bool("third_person") && globals::thirdtemp && !globals::panic) {
 		c_vector view_vec; math::angle_to_vector(view.angles, view_vec);
 		view_vec.invert();
 
@@ -568,14 +583,16 @@ void override_view_hook::hook(i_client_mode* self, c_view_setup& view) {
 }
 
 float get_viewmodel_fov::hook() {
-	if (auto fov = settings::get_int("custom_viewmodel_fov"); fov > 0) {
+		
+	if (auto fov = settings::get_int("custom_viewmodel_fov"); fov > 0 && !globals::panic) {
 		return static_cast<float>(fov);
 	}
 	return original();
 }
 
 float get_aspect_ration_hook::hook(void* self) {
-	if (auto rat = settings::get_int("custom_aspect_ratio"); rat > 0) {
+	
+	if (auto rat = settings::get_int("custom_aspect_ratio"); rat > 0 && !globals::panic) {
 		return (float)rat / 100.f;
 	}
 	return original(self);
@@ -610,13 +627,20 @@ LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message
 		return true;
 	}
 
-	auto mk = VK_INSERT;
+	auto mk = settings::get_var<uint32_t>("menu_key");
 	/*if (settings::binds["other::menu_key"] > 0)
 		mk = settings::binds["other::menu_key"];*/
 
-	if (message_type == WM_KEYDOWN)
-		if (w_param == mk)
+	if (message_type == WM_KEYDOWN) {
+		if (w_param == mk&&!globals::panic)
 			menu::toggle_menu();
+		if (w_param == settings::get_var<uint32_t>("panic_key"))
+			globals::panic = !globals::panic;
+		if (globals::unload) {
+			
+			hooks_manager::shutdown();
+		}
+	}
 	
 	//ImGui_ImplWin32_WndProcHandler(window, message_type, w_param, l_param);
 	if (ImGui_ImplWin32_WndProcHandler(window, message_type, w_param, l_param) && menu::menu_is_open())

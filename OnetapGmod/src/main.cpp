@@ -7,6 +7,7 @@
 #include "interfaces.h"
 #include "hooks/hooks_manager.h"
 #include "utils/input_system.h"
+#include "settings/settings.h"
 
 typedef void(__cdecl* warning_fn)(char const*, ...);
 
@@ -24,10 +25,11 @@ void entry_point() {
 #endif
 }
 
-BOOL APIENTRY DllMain(HINSTANCE dll_instance, DWORD reason, LPVOID reversed)
+BOOL APIENTRY DllMain( HINSTANCE dll_instance, DWORD reason, LPVOID reversed)
 {
 	DisableThreadLibraryCalls(dll_instance);
 	if (reason == DLL_PROCESS_ATTACH) {
+	
 		globals::dllInstance = dll_instance;
 		std::thread(entry_point).detach();
 	}
