@@ -21,8 +21,8 @@ namespace input_system {
 	void set_bind_state(const std::string& name, bind_type bt, bool can_be_null); // if bt == -1 then current value 
 	void remove_bind(const std::string& name);*/
 
-	void add_bind(int64_t id, uint32_t key, bool* var, bind_system::bind_type type, bool bind_value = true);
-	void add_bind(int64_t id, uint32_t key, int* var, bind_system::bind_type type, int bind_value);
+	void add_bind(int64_t id, int key, bool* var, bind_system::bind_type type, bool bind_value = true);
+	void add_bind(int64_t id, int key, int* var, bind_system::bind_type type, int bind_value);
 	
 	bool is_key_pressed(int key, bool null_is_true = false);
 	bool is_key_just_pressed(int key, bool null_is_true = false);

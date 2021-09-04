@@ -402,7 +402,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	cmd->viewangles.normalize();
 	original(interfaces::client_mode, frame_time, cmd);
 
-	if (GetAsyncKeyState(settings::get_var<uint32_t>("add_entity_bind"))&1) {
+	if (GetAsyncKeyState(settings::get_var<int>("add_entity_bind"))&1) {
 		q_angle ang; interfaces::engine->get_view_angles(ang);
 
 		trace_t tr;
@@ -628,14 +628,14 @@ LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message
 		return true;
 	}
 
-	auto mk = settings::get_var<uint32_t>("menu_key");
+	auto mk = settings::get_var<int>("menu_key");
 	/*if (settings::binds["other::menu_key"] > 0)
 		mk = settings::binds["other::menu_key"];*/
 
 	if (message_type == WM_KEYDOWN) {
 		if (w_param == mk&&!globals::panic)
 			menu::toggle_menu();
-		if (w_param == settings::get_var<uint32_t>("panic_key"))
+		if (w_param == settings::get_var<int>("panic_key"))
 			globals::panic = !globals::panic;
 		if (globals::unload) {
 			

@@ -19,7 +19,7 @@ namespace bind_system {
 	template <typename t>
 	struct bind_t {
 		int type = static_cast<int>(bind_type::none);
-		uint32_t key = 0;
+		int key = 0;
 		t* value = nullptr;
 		t bind_value = 0;
 		t old_value = 0;

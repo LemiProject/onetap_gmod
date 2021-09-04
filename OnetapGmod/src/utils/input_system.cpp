@@ -22,11 +22,11 @@ void input_system::initialize_input_system() {
 
 }
 
-void input_system::add_bind(int64_t id, uint32_t key, bool* var, bind_system::bind_type type, bool bind_value) {
+void input_system::add_bind(int64_t id, int key, bool* var, bind_system::bind_type type, bool bind_value) {
 	bind_system::bool_binds[id].push_back({(int)type, key, var, bind_value});
 }
 
-void input_system::add_bind(int64_t id, uint32_t key, int* var, bind_system::bind_type type, int bind_value) {
+void input_system::add_bind(int64_t id, int key, int* var, bind_system::bind_type type, int bind_value) {
 	bind_system::int_binds[id].push_back({ (int)type, key, var, bind_value });
 }
 

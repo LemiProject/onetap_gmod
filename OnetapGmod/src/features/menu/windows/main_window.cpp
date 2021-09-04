@@ -1188,7 +1188,7 @@ void main_window::draw_main_window() {
 				}
 				else if (selectedsubtab == 1)
 				{
-					Hotkey("KeyBind Add", &settings::get_var<uint32_t>("add_entity_bind"));
+					Hotkey("KeyBind Add", &settings::get_var<int>("add_entity_bind"));
 
 					static std::string curnamet = "Teams";
 					if (begincombo("Teams", curnamet.c_str(), ImGuiComboFlags_HeightSmall))
@@ -1334,8 +1334,8 @@ void main_window::draw_main_window() {
 			}
 			else if (selectedtab == 5)
 			{
-			Hotkey("Menu ", &settings::get_var<uint32_t>("menu_key"));
-			Hotkey("Panic", &settings::get_var<uint32_t>("panic_key"));
+			Hotkey("Menu ", &settings::get_var<int>("menu_key"));
+			Hotkey("Panic", &settings::get_var<int>("panic_key"));
 			if (button("Unload", ImVec2(303, 25)))
 				globals::unload = true;
 			}
@@ -1343,4 +1343,23 @@ void main_window::draw_main_window() {
 		ImGui::EndGroup();
 	}
 	ImGui::End();
+
+#if defined(WITTCHEN_BETA) or defined(_DEBUG)
+	PushStyleColor(ImGuiCol_WindowBg, ImColor(18, 18, 18).Value);
+	
+	ImGui::Begin(u8"Скура гей");
+
+	Wittchen::DrawEspEditor();
+	WittchenCheckbox("Fake lags##HVH", "fake_lags");
+	WittchenSlider("Amount##HVH_FL", "fake_lags_amount", { 0, 21 });
+	WittchenCheckbox("Fake Duck", "fake_duck");
+
+	if (Button("Load config")) settings::load_from_file("C:\\cfg.json");
+	if (Button("Save config")) settings::save_to_file("C:\\cfg.json");
+	
+	ImGui::End();
+
+	PopStyleColor();
+#endif
+	
 }

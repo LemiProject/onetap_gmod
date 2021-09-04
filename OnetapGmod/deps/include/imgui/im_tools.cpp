@@ -520,7 +520,7 @@ constexpr const char* const key_names[] = {
 	"RALT"
 };
 
-bool ImGui::Hotkey(const char* label, uint32_t* k, const ImVec2& size_arg, uint32_t none_key, const char* none_str)
+bool ImGui::Hotkey(const char* label, int* k, const ImVec2& size_arg, int none_key, const char* none_str)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)

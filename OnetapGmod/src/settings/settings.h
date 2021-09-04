@@ -2,6 +2,7 @@
 
 #include <string>
 #include <any>
+#include <filesystem>
 
 #include "bind_system.h"
 
@@ -30,10 +31,11 @@ namespace settings {
 	template <typename t>
 	inline t& get_var(var_id_t_non_copy name) {
 		if (!var_exist(name))
-			if (IF_NOT_EXIST_CREATE_VAR_)
+			if constexpr (IF_NOT_EXIST_CREATE_VAR_)
 				internal::get_settings_storage()[name] = 0;
-			else
+			else {
 				throw std::exception(("Cannot find variable " + name).c_str());
+			}
 		try {
 			return *std::any_cast<t>(&internal::get_settings_storage()[name]);
 		} catch (...) {
@@ -63,4 +65,7 @@ namespace settings {
 	bool is_bool(var_id_t_non_copy s);
 	bool is_int(var_id_t_non_copy s);
 	bool is_float(var_id_t_non_copy s);
+
+	void save_to_file(const std::filesystem::path& path);
+	void load_from_file(const std::filesystem::path& path);
 }
