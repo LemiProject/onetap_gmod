@@ -624,8 +624,8 @@ bool SliderScalar11(const char* label, ImGuiDataType data_type, void* p_data, co
 	window->DrawList->AddRectFilled(ImVec2(grab_bb.Min.x + 0, grab_bb.Min.y + 0), ImVec2(grab_bb.Max.x + 0, grab_bb.Max.y + 0), ImColor(249, 165, 22, 255), 6, 15);
 
 	window->DrawList->AddRect(ImVec2(grab_bb.Max.x + -14, grab_bb.Max.y + -16), ImVec2(grab_bb.Max.x + 0, grab_bb.Max.y + 4), ImColor(94, 94, 94, 28), 6, 15, 1.000000);
-	window->DrawList->AddRectFilled(ImVec2(grab_bb.Max.x + -14, grab_bb.Max.y + -16), ImVec2(grab_bb.Max.x + 0, grab_bb.Max.y + 4), ImColor(255, 254, 254, 28), 6, 15);
-	window->DrawList->AddRectFilled(ImVec2(grab_bb.Max.x + -14, grab_bb.Max.y + -16), ImVec2(grab_bb.Max.x + 0, grab_bb.Max.y + 4), ImColor(255, 255, 255, 255), 6, 15);
+	window->DrawList->AddRectFilled(ImVec2(grab_bb.Max.x + -14, grab_bb.Max.y + -21), ImVec2(grab_bb.Max.x + 0, grab_bb.Max.y + 4), ImColor(255, 254, 254, 28), 6, 15);
+	window->DrawList->AddRectFilled(ImVec2(grab_bb.Max.x + -14, grab_bb.Max.y + -21), ImVec2(grab_bb.Max.x + 0, grab_bb.Max.y + 4), ImColor(255, 255, 255, 255), 6, 15);
 
 	char value_buf[64];
 	const char* value_buf_end = value_buf + ImGui::DataTypeFormatString(value_buf, IM_ARRAYSIZE(value_buf), data_type, p_data, format);
@@ -1090,10 +1090,17 @@ void main_window::draw_main_window() {
 				if (subtab("Lua", selectedsubtab == 2))
 					selectedsubtab = 2;
 			}
+			if(selectedtab==5)
+			{
+				if (subtab("Config", selectedsubtab == 0))
+					selectedsubtab = 0;
+				if (subtab("General", selectedsubtab == 1))
+					selectedsubtab = 1;
+			}
 		}
 		ImGui::EndGroup();
 
-		ImGui::SetCursorPos({ (float)217, (float)96 });
+		ImGui::SetCursorPos({ (float)217, (float)85 });
 		ImGui::BeginGroup();
 		{
 			/*if (begincombo("Combo", "Preview", NULL))
@@ -1129,14 +1136,13 @@ void main_window::draw_main_window() {
 				}
 				else if (selectedsubtab == 0 && selectedcategory == 1)
 				{
-					checkbox("AimBot Fov Draw", &settings::get_bool("aimbot_fov_draw"));
+					checkbox("Field of View", &settings::get_bool("aimbot_fov_draw"));
 					ImGui::SameLine();
-					ImGui::SetCursorPosY(100);
+					ImGui::SetCursorPosY(GetCursorPosY() + 5);
 					ColorEdit44("", globals::colorfov, ImGuiColorEditFlags_NoInputs);
-					checkbox("Aimbot Draw Target", &settings::get_bool("aimbot_draw_target"));
+					checkbox("Line Target", &settings::get_bool("aimbot_draw_target"));
 					ImGui::SameLine();
-					auto aa = ImGui::GetCursorPosY();
-					ImGui::SetCursorPosY(aa + 5);
+					ImGui::SetCursorPosY(GetCursorPosY() + 5);
 					ColorEdit44(" ", globals::colortarger, ImGuiColorEditFlags_NoInputs);
 				}
 			}
@@ -1145,29 +1151,50 @@ void main_window::draw_main_window() {
 				if (selectedsubtab == 0) 
 				{
 					static const char* text[]{ "border", "corner" };
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					slider_float("Distance", &settings::get_float("esp_dist"), 0, 20000, NULL, NULL);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Box", &settings::get_bool("esp_player_enable"));
-					checkbox("HP", &settings::get_bool("esp_player_hp"));
-					checkbox("Name", &settings::get_bool("esp_player_name"));
-					checkbox("UserGroup", &settings::get_bool("esp_player_group"));
-					checkbox("Weapon", &settings::get_bool("esp_player_weapon"));
-					checkbox("Job", &settings::get_bool("esp_player_team"));
+					SameLine();
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
 					ColorEdit44("Friend Esp Color", globals::colorfriend, ImGuiColorEditFlags_NoInputs);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Dormant", &settings::get_bool("esp_players_dormant"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("HP", &settings::get_bool("esp_player_hp"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Name", &settings::get_bool("esp_player_name"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("UserGroup", &settings::get_bool("esp_player_group"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Weapon", &settings::get_bool("esp_player_weapon"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Job", &settings::get_bool("esp_player_team"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Distance ", &settings::get_bool("esp_player_dist"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					combo("Box Type", &settings::get_int("esp_type"), text, IM_ARRAYSIZE(text));
 				}
 				if (selectedsubtab == 1)
 				{
 					static const char* text[]{ "border", "corner" };
-
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					slider_float("Distance", &settings::get_float("esp_dist_ent"), 0, 20000, NULL, NULL);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Box", &settings::get_bool("esp_entitie_enable"));
 					SameLine();
 					auto aa = ImGui::GetCursorPosY();
 					ImGui::SetCursorPosY(aa + 5);
 					ColorEdit44("", globals::colorespentity, ImGuiColorEditFlags_NoInputs);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Dormant", &settings::get_bool("esp_entitie_dormant"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Name", &settings::get_bool("esp_entitie_name"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("HP", &settings::get_bool("esp_entitie_hp"));
-					checkbox("Distance", &settings::get_bool("esp_entitie_dist"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Distance ", &settings::get_bool("esp_entitie_dist"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					combo("Box Type", &settings::get_int("esp_type_ent"), text, IM_ARRAYSIZE(text));
 
 				}
@@ -1334,11 +1361,97 @@ void main_window::draw_main_window() {
 			}
 			else if (selectedtab == 5)
 			{
-			Hotkey("Menu ", &settings::get_var<int>("menu_key"));
-			Hotkey("Panic", &settings::get_var<int>("panic_key"));
-			if (button("Unload", ImVec2(303, 25)))
-				globals::unload = true;
+				if (selectedsubtab == 1) {
+					Hotkey("Menu ", &settings::get_var<int>("menu_key"));
+					Hotkey("Panic", &settings::get_var<int>("panic_key"));
+					if (button("Unload", ImVec2(303, 25)))
+						globals::unload = true;
+				}
+				
+				if (selectedsubtab == 0) {
+					static std::vector<std::string> configs;
+
+					static auto load_configs = []() {
+						std::vector<std::string> items = {};
+
+						std::string path = get_lua_dir();
+						if (!filesystem::is_directory(path))
+							filesystem::create_directories(path);
+
+						for (auto& p : filesystem::directory_iterator(path))
+							items.push_back(p.path().string());
+
+						return items;
+					};
+
+					static auto is_configs_loaded = false;
+					if (!is_configs_loaded) {
+						is_configs_loaded = true;
+						configs = load_configs();
+					}
+
+					static std::string current_config;
+
+					static char config_name[32];
+					
+					static std::string paths;
+					
+					ImGui::SetCursorPosX(200);
+
+					ImGui::ListBoxHeader("##configs", { 338,230 });
+					{
+						auto clean_item_name = [](const char* name) -> const char* {
+							if (name[0] == 'C')
+								name++;
+
+							auto start = strstr(name, "Roaming");
+							if (start != nullptr)
+								name = start + 8;
+
+							return name;
+						};
+						for (auto& config : configs) {
+							auto isexeccfg = strstr(config.c_str(), ".otc") != nullptr;
+							if (isexeccfg) {
+								if (ImGui::Selectable(clean_item_name(config.c_str()), config == current_config)) {
+									current_config = config;
+									paths = current_config;
+								}
+							}
+						}
+					}
+					ImGui::ListBoxFooter();
+					ImGui::PushItemWidth(247);
+					ImGui::InputText("##config_name", config_name, sizeof(config_name));
+					ImGui::PopItemWidth();
+					SameLine();
+
+					if (button("Create", { 0,0 })) {
+						current_config = std::string(config_name);
+						paths = get_lua_dir() + "\\" + current_config + ".otc";
+						std::ofstream file(paths);
+						settings::save_to_file(paths);
+						is_configs_loaded = false;
+					}
+						if (button("Load", ImVec2(303, 25)))
+						{
+							settings::load_from_file(paths);
+						}
+
+						if (button("Save", ImVec2(303, 25)))
+							settings::save_to_file(paths);
+
+						if (button("Delete", ImVec2(303, 25)) && filesystem::remove(current_config)) {
+							current_config.clear();
+							is_configs_loaded = false;
+						}
+					
+					if (button("Refresh", ImVec2(303, 25)))
+						is_configs_loaded = false;
+					
+				}
 			}
+		
 		}
 		ImGui::EndGroup();
 	}

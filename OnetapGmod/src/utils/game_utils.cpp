@@ -49,7 +49,7 @@ std::vector<int> game_utils::get_valid_entities(bool dormant) {
 	std::vector<int> c;
 	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i) {
 		auto ent = get_entity_by_index(i);
-		if (ent && ent->is_alive() && !ent->is_dormant() && !local_player->is_equal(ent)) c.push_back(i);
+		if (ent && ent->is_alive()/* && !ent->is_dormant()*/ && !local_player->is_equal(ent)) c.push_back(i);
 	}
 	return c;
 }

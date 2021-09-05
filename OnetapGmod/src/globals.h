@@ -4,8 +4,10 @@
 #include <string>
 #include <iostream>
 #include "game_sdk/misc/viewsetup.h"
+#include "game_sdk/misc/usercmd.h"
 #include <mutex>
 #include <vector>
+
 namespace globals {
 	inline HINSTANCE dllInstance;
 
@@ -14,6 +16,7 @@ namespace globals {
 		inline c_view_setup proof_view_setup;
 		inline int chocked_packets;
 	}
+	inline q_angle lastview;
 	inline std::vector<std::string> friends;
 	inline std::vector<int> friendly_teams;
 	class c_entity_list
@@ -43,6 +46,7 @@ namespace globals {
 	inline bool thirdtemp;
 	inline int aimbotkey;
 	inline int entitykey;
+	inline c_user_cmd last_cmd;
 	inline bool panic;
 	inline float colorfov[4]{255,255,255,1};
 	inline float colortarger[4]{ 255,255,255,1};

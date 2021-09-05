@@ -34,7 +34,11 @@ std::string format_text_for_entity(const std::string& str, c_base_entity* ent) {
 	auto s = str;
 	if (ent->is_player()) {
 		auto ply = (c_base_player*)ent;
-		
+		char dist[256];
+		if (settings::get_bool("esp_player_dist")) {
+			sprintf_s(dist, "%.1fm", (get_local_player()->get_origin() - ent->get_origin()).length() * 0.0254f);
+			s = replace_all(s, "%distance", dist);
+		}
 			auto weapon = ply->get_active_weapon();
 			if (weapon)
 			{
@@ -266,6 +270,8 @@ void esp::draw_esp() {
 
 		if (p->is_player())
 		{
+			if (p->is_dormant() && settings::get_bool("esp_players_dormant"))
+				continue;
 			if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_float("esp_dist"))
 				continue;
 				render_strings(box, p);
@@ -290,10 +296,12 @@ void esp::draw_esp() {
 		}
 		else if (!p->is_player()&&globals::entitys_to_draw.exist(p->get_classname()))
 		{
-			if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_float("esp_dist_ent"))
+			if (p->is_dormant() && settings::get_bool("esp_entitie_dormant"))
 				continue;
-			box.type = settings::get_int("esp_type_ent");
-			box.colorbox = c_color(globals::colorespentity[0]*255.f, globals::colorespentity[1] * 255.f, globals::colorespentity[2] * 255.f);
+				if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_float("esp_dist_ent"))
+					continue;
+				box.type = settings::get_int("esp_type_ent");
+				box.colorbox = c_color(globals::colorespentity[0] * 255.f, globals::colorespentity[1] * 255.f, globals::colorespentity[2] * 255.f);
 				render_strings(box, p);
 				if (settings::get_bool("esp_entitie_enable")) {
 					switch ((box_type)box.type) {
@@ -306,6 +314,7 @@ void esp::draw_esp() {
 						directx_render::corner_box(box.min, box.max, box.colorentity);
 					}
 				}
+			
 		}
 	}
 }

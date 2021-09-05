@@ -36,11 +36,12 @@ internal::settings_storage_type settings_storage{
 	{"esp_player_weapon",false},
 	{"esp_player_team",false},
 	{"esp_entitie_info",false},
-	{"misc_freecam",false},
 	{"esp_entitie_name",false},
 	{"esp_entitie_hp",false},
+	{"esp_player_dist",false},
 	{"esp_entitie_dist",false},
-	{"misc_freecam", 10.f},
+	{"esp_entitie_dormant",false},
+	{"esp_players_dormant",false},
 	{"aimbot_fov", 0},
 	{"esp_dist", 20000.f},
 	{"esp_dist_ent", 20000.f},
@@ -51,7 +52,7 @@ internal::settings_storage_type settings_storage{
 	{"third_person_distance", 50},
 	{"fake_lags_amount", 0},
 	{"autostrafe", false},
-	{"add_entity_bind", (uint32_t)0},
+	{"add_entity_bind", 0},
 	{"menu_key", (int)VK_INSERT},
 	{"panic_key", (int)VK_HOME}
 

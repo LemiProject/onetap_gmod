@@ -27,7 +27,7 @@
 #define IN_GRENADE1		(1 << 23)
 #define IN_GRENADE2		(1 << 24)
 #define	IN_ATTACK3		(1 << 25)
-
+ 
 class c_user_cmd
 {
 public:
