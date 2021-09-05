@@ -431,7 +431,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 		}
 	}
 
-	if (settings::get_bool("fake_lags")) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
+	if (settings::get_bool("fake_lags") || settings::get_int("fake_lags_amount") > 0) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
 	if (settings::get_bool("fake_duck") && GetAsyncKeyState(globals::fakelagkey)) {
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;
 		if (send_packets) cmd->buttons |= IN_DUCK;  else cmd->buttons &= ~IN_DUCK;

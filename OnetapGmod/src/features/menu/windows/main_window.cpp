@@ -1029,6 +1029,9 @@ void main_window::draw_main_window() {
 			if (tab("Aimbot", ICON_FA_CROSSHAIRS, selectedtab == 1))
 				selectedtab = 1;
 			ImGui::SameLine();
+			if (tab("HVH", ICON_FA_BRAIN, selectedtab == 6))
+				selectedtab = 6;
+			SameLine();
 			if (tab("Visuals", ICON_FA_ADJUST, selectedtab == 2))
 				selectedtab = 2;
 			ImGui::SameLine();
@@ -1066,6 +1069,10 @@ void main_window::draw_main_window() {
 				if (category(ICON_FA_COGS, selectedcategory == 0))
 					selectedcategory = 0;
 			}
+
+			/*if (selectedtab == 6) {
+				if (category(ICON_FA))
+			}*/
 		}
 		ImGui::EndGroup();
 
@@ -1106,6 +1113,10 @@ void main_window::draw_main_window() {
 			/*if (begincombo("Combo", "Preview", NULL))
 				ImGui::Selectable("Preview", true),
 				ImGui::EndCombo();*/
+			if (selectedtab == 6) {
+				slider_int("Fakelags", &settings::get_int("fake_lags_amount"), 0, 16, "%d", 0);
+			}
+			
 			if (selectedtab == 1) {
 				if (selectedsubtab == 0 && selectedcategory == 0) { //general
 					checkbox("Enable", &globals::aimbotenable); // aimbot_autofire norecoil nospread aimbot_fov_draw aimbot_silent aimbot_draw_target
