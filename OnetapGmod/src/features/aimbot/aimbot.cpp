@@ -143,6 +143,15 @@ c_vector aimbot::get_aimbot_target()
 	return target.shoot_pos.position;
 }
 
+q_angle do_smooth(const q_angle& from, const q_angle& to, float smooth_val) {
+	auto delta = to - from;
+	delta.normalize();
+	delta /= q_angle(smooth_val, smooth_val, 0);
+	auto out = to - delta;
+	out.normalize();
+	return out;
+}
+
 void aimbot::run_aimbot(c_user_cmd& cmd) {
 	if (!globals::aimbotenable)
 		return;
@@ -159,6 +168,9 @@ void aimbot::run_aimbot(c_user_cmd& cmd) {
 	last_target_id = target.idx;
 	last_target_time = interfaces::engine->get_time_stamp_from_start();
 
+	if (settings::get_int("aim_smooth") > 0)
+		target.shoot_pos.angle = do_smooth(cmd.viewangles, target.shoot_pos.angle, settings::get_int("aim_smooth") / 100.f);
+	
 	cmd.viewangles = target.shoot_pos.angle;
 
 	if (!settings::get_bool("aimbot_silent"))
