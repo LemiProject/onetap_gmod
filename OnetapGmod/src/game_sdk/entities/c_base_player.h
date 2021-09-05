@@ -49,8 +49,7 @@ public:
 	NETVAR("DT_BasePlayer", "m_hObserverTarget", get_observer_target_handle, uintptr_t);
 	NETVAR("DT_PlayerResource", "m_iPing", get_ping, int);
 
-	int get_move_type()
-	{
+	int get_move_type() {
 		CHECK_THIS{};
 		auto glua = interfaces::lua_shared->get_lua_interface((int)e_interface_type::client);
 		if (!glua)
@@ -66,18 +65,18 @@ public:
 		return static_cast<int>(glua->get_number(-1));;
 	}
 	
-	std::string get_name() const
-	{
+	std::string get_name() const {
 		player_info_s info;
 		interfaces::engine->get_player_info(get_index(), &info);
 		return info.name;
 	}
-	std::string get_steam_id() const
-	{
+	
+	std::string get_steam_id() const {
 		player_info_s info;
 		interfaces::engine->get_player_info(get_index(), &info);
 		return info.guid;
 	}
+	
 	bool is_admin()
 	{
 		auto str = get_user_group();
@@ -85,7 +84,8 @@ public:
 		return str.find("admin") != std::string::npos || str.find("owner") != std::string::npos
 			|| str.find("king") != std::string::npos || str.find("moder") != std::string::npos || str.find("root") != std::string::npos;
 	}
-	const char* GetName(int EntIdx) {
+	
+	std::string get_rp_name(int EntIdx) {
 		CHECK_THIS{};
 		auto glua = interfaces::lua_shared->get_lua_interface((int)e_special::glob);
 		c_lua_auto_pop p(glua);
@@ -128,10 +128,9 @@ public:
 			glua->pop(3);
 		}
 		return name;
-
 	}
-	std::string get_team_name()
-	{
+	
+	std::string get_team_name() {
 		CHECK_THIS{};
 		auto glua = interfaces::lua_shared->get_lua_interface((int)e_special::glob);
 		if (!glua) return {};
@@ -146,8 +145,7 @@ public:
 		return glua->get_string();
 	}
 
-	q_angle get_view_punch_angles()
-	{
+	q_angle get_view_punch_angles() {
 		CHECK_THIS{};
 		auto lua = interfaces::lua_shared->get_lua_interface((int)e_special::glob);
 		if (!lua) return { 0.f };
@@ -178,8 +176,7 @@ public:
 		return { x, y, z };
 	}
 	
-	c_color get_team_color()
-	{
+	c_color get_team_color() {
 		CHECK_THIS{};
 		auto glua = interfaces::lua_shared->get_lua_interface((int)e_special::glob);
 		c_color color;
@@ -213,8 +210,7 @@ public:
 		return color;
 	}
 	
-	std::string get_user_group()
-	{
+	std::string get_user_group() {
 		CHECK_THIS{};
 		auto lua = interfaces::lua_shared->get_lua_interface((int)e_special::glob);
 		if (!lua) return {};
