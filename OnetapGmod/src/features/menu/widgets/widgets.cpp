@@ -184,6 +184,9 @@ void Wittchen::InitializeEspStyleEditor() {
 	g_style_editor.temp_box.max = { 200, 300 };
 	g_style_editor.temp_box.color = colors::white_color;
 	g_style_editor.temp_box.border_color = colors::black_color;
+	g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
+		"%rpname", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::top
+	} });
 		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
 		"%name", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::top
 	} });
@@ -230,6 +233,7 @@ constexpr auto player_dist = "100M";
 std::string formatPreviewText(const std::string& str) {
 	
 	std::string out = str;
+	//out = replace_all(out, "%rpname", player_rpname);
 	out = replace_all(out, "%name", player_name);
 	out = replace_all(out, "%distance", player_dist);
 	out = replace_all(out, "%health", std::to_string(player_health));

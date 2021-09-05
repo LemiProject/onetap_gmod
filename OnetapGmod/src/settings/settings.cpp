@@ -32,6 +32,7 @@ internal::settings_storage_type settings_storage{
 	{"esp_player_info",false},
 	{"esp_player_hp",false},
 	{"esp_player_name",false},
+	{"esp_player_rpname",false},
 	{"esp_player_group",false},
 	{"esp_player_weapon",false},
 	{"esp_player_team",false},

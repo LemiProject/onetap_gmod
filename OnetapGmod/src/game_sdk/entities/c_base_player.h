@@ -85,7 +85,51 @@ public:
 		return str.find("admin") != std::string::npos || str.find("owner") != std::string::npos
 			|| str.find("king") != std::string::npos || str.find("moder") != std::string::npos || str.find("root") != std::string::npos;
 	}
+	const char* GetName(int EntIdx) {
+		CHECK_THIS{};
+		auto glua = interfaces::lua_shared->get_lua_interface((int)e_special::glob);
+		c_lua_auto_pop p(glua);
+		const char* name = nullptr;
+		if (glua) {
+			glua->push_special((int)e_special::glob);
+			glua->get_field(-1, "FindMetaTable");
+			if (glua->get_type(-1) == (int)lua_object_type::NIL) {
+				glua->pop(2);
+				return name;
+			}
+			glua->push_string("Player");
+			glua->call(1, 1);
+			if (glua->get_type(-1) == (int)lua_object_type::NIL) {
+				glua->pop(2);
+				return name;
+			}
+			glua->get_field(-1, "Nick");
+			if (glua->get_type(-1) == (int)lua_object_type::NIL) {
+				glua->pop(3);
+				return name;
+			}
+			glua->get_field(-3, "Entity");
+			if (glua->get_type(-1) == (int)lua_object_type::NIL) {
+				glua->pop(4);
+				return name;
+			}
+			glua->push_number(EntIdx);
+			glua->call(1, 1);
+			if (glua->get_type(-1) == (int)lua_object_type::NIL) {
+				glua->pop(4);
+				return name;
+			}
+			glua->call(1, 1);
+			if (glua->get_type(-1) == (int)lua_object_type::NIL) {
+				glua->pop(3);
+				return name;
+			}
+			name = glua->get_string(-1);
+			glua->pop(3);
+		}
+		return name;
 
+	}
 	std::string get_team_name()
 	{
 		CHECK_THIS{};

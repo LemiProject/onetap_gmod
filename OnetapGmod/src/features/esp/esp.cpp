@@ -50,6 +50,8 @@ std::string format_text_for_entity(const std::string& str, c_base_entity* ent) {
 			}
 			if (settings::get_bool("esp_player_name"))
 				s = replace_all(s, "%name", ply->get_name());
+			if (settings::get_bool("esp_player_rpname"))
+				s = replace_all(s, "%rpname", ply->GetName(ply->get_index()));
 			if (settings::get_bool("esp_player_hp"))
 				s = replace_all(s, "%health", std::to_string(ply->get_health()));
 			if (settings::get_bool("esp_player_team"))

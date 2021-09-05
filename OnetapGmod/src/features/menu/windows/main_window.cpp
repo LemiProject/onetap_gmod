@@ -1165,6 +1165,8 @@ void main_window::draw_main_window() {
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Name", &settings::get_bool("esp_player_name"));
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("RpName", &settings::get_bool("esp_player_rpname"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("UserGroup", &settings::get_bool("esp_player_group"));
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Weapon", &settings::get_bool("esp_player_weapon"));
