@@ -169,7 +169,7 @@ void aimbot::run_aimbot(c_user_cmd& cmd) {
 	last_target_time = interfaces::engine->get_time_stamp_from_start();
 
 	if (settings::get_int("aim_smooth") > 0)
-		target.shoot_pos.angle = do_smooth(cmd.viewangles, target.shoot_pos.angle, settings::get_int("aim_smooth") / 100.f);
+		target.shoot_pos.angle = do_smooth(target.shoot_pos.angle, cmd.viewangles, settings::get_int("aim_smooth") / 100.f);
 
 	cmd.viewangles = target.shoot_pos.angle;
 

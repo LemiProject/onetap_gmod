@@ -159,7 +159,7 @@ void settings::load_from_file(const std::filesystem::path& path) {
 		settings_storage[i.key()] = get_value();
 	}
 
-	globals::on_load(json);
+	globals::on_load(nlohmann::json::parse(file_content));
 }
 
 bool var_exist(var_id_t_non_copy name) {

@@ -1519,7 +1519,7 @@ void main_window::draw_main_window() {
 #if defined(WITTCHEN_BETA) or defined(_DEBUG)
 	PushStyleColor(ImGuiCol_WindowBg, ImColor(18, 18, 18).Value);
 
-	ImGui::Begin(u8"Скура гей");
+	ImGui::Begin(u8"Привет))");
 
 	Wittchen::DrawEspEditor();
 	WittchenCheckbox("Fake lags##HVH", "fake_lags");
