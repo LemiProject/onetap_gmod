@@ -43,11 +43,9 @@ namespace globals {
 	inline bool unload;
 	inline bool aimbotenable;
 	inline bool aimbot_autofire;
-	inline int fakelagkey;
 	inline bool glua;
 	inline bool thirdtemp;
-	inline int aimbotkey;
-	inline int entitykey;
+
 	inline c_user_cmd last_cmd;
 	inline bool panic;
 	inline float colorfov[4]{255,255,255,1};
@@ -55,7 +53,6 @@ namespace globals {
 	inline float colorespplayer[4]{ 255,255,255,1 };
 	inline float colorespentity[4]{ 255,255,255,1 };
 	inline float colorfriend[4]{ 0.f, 1.f*2.5f, 0.646288f*255.f, 1.00f*255.f };
-	inline int thirdpersonkey;
 	inline std::string lua;
 	
 	void on_save(nlohmann::json& out);

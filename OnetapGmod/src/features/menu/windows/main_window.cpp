@@ -36,7 +36,7 @@ bool c_wittchen_tab_bar::begin() {
 }
 
 void c_wittchen_tab_bar::end() {
-	
+
 }
 
 bool TabButton(const std::string& name, int& cur_idx) {
@@ -968,12 +968,13 @@ bool ColorEdit44(const char* label, float col[4], ImGuiColorEditFlags flags)
 
 	return value_changed;
 }
+
 using namespace std;
 
 auto get_lua_dir = [&]()
 {
 	auto dir_path = file_tools::get_hack_directory_path();
-	
+
 	return dir_path.string();
 };
 void read_file(std::string& out, const std::string& path)
@@ -983,7 +984,7 @@ void read_file(std::string& out, const std::string& path)
 	std::string file_content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
 	out = file_content;
-}	
+}
 void main_window::draw_main_window() {
 	auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	auto aaa = render_system::get_device();
@@ -1008,19 +1009,19 @@ void main_window::draw_main_window() {
 		draw->AddRectFilled(ImVec2(p.x + 0, p.y + 0), ImVec2(p.x + 545, p.y + 12), ImColor(249, 165, 22, 255), 6, 15);
 		draw->AddRectFilled(ImVec2(p.x + 0, p.y + 460), ImVec2(p.x + 545, p.y + 470), ImColor(33, 33, 38, 255), 12, 15);
 		draw->AddRectFilled(ImVec2(p.x + 0, p.y + 7), ImVec2(p.x + 545, p.y + 464), ImColor(33, 33, 38, 255), 0, 15);
-			draw->AddLine(ImVec2(p.x + 0, p.y + 72), ImVec2(p.x + 545, p.y + 72), ImColor(89, 87, 93, 255), 1.000000);
-			draw->AddLine(ImVec2(p.x + 0, p.y + 71), ImVec2(p.x + 545, p.y + 71), ImColor(22, 21, 26, 255), 1.000000);
-			draw->AddLine(ImVec2(p.x + 0, p.y + 73), ImVec2(p.x + 545, p.y + 73), ImColor(22, 21, 26, 255), 1.000000);
-			draw->AddLine(ImVec2(p.x + 140, p.y + 72), ImVec2(p.x + 140, p.y + 470), ImColor(79, 77, 82, 255), 1.000000);
-			draw->AddLine(ImVec2(p.x + 192, p.y + 72), ImVec2(p.x + 192, p.y + 470), ImColor(79, 77, 82, 255), 1.000000);
-			draw->AddLine(ImVec2(p.x + 191, p.y + 73), ImVec2(p.x + 191, p.y + 470), ImColor(22, 21, 26, 255), 1.000000);
-			draw->AddLine(ImVec2(p.x + 193, p.y + 73), ImVec2(p.x + 193, p.y + 470), ImColor(22, 21, 26, 255), 1.000000);
-			draw->AddLine(ImVec2(p.x + 139, p.y + 73), ImVec2(p.x + 139, p.y + 470), ImColor(22, 21, 26, 255), 1.000000);
-			draw->AddLine(ImVec2(p.x + 141, p.y + 73), ImVec2(p.x + 141, p.y + 470), ImColor(22, 21, 26, 255), 1.000000);
-		
+		draw->AddLine(ImVec2(p.x + 0, p.y + 72), ImVec2(p.x + 545, p.y + 72), ImColor(89, 87, 93, 255), 1.000000);
+		draw->AddLine(ImVec2(p.x + 0, p.y + 71), ImVec2(p.x + 545, p.y + 71), ImColor(22, 21, 26, 255), 1.000000);
+		draw->AddLine(ImVec2(p.x + 0, p.y + 73), ImVec2(p.x + 545, p.y + 73), ImColor(22, 21, 26, 255), 1.000000);
+		draw->AddLine(ImVec2(p.x + 140, p.y + 72), ImVec2(p.x + 140, p.y + 470), ImColor(79, 77, 82, 255), 1.000000);
+		draw->AddLine(ImVec2(p.x + 192, p.y + 72), ImVec2(p.x + 192, p.y + 470), ImColor(79, 77, 82, 255), 1.000000);
+		draw->AddLine(ImVec2(p.x + 191, p.y + 73), ImVec2(p.x + 191, p.y + 470), ImColor(22, 21, 26, 255), 1.000000);
+		draw->AddLine(ImVec2(p.x + 193, p.y + 73), ImVec2(p.x + 193, p.y + 470), ImColor(22, 21, 26, 255), 1.000000);
+		draw->AddLine(ImVec2(p.x + 139, p.y + 73), ImVec2(p.x + 139, p.y + 470), ImColor(22, 21, 26, 255), 1.000000);
+		draw->AddLine(ImVec2(p.x + 141, p.y + 73), ImVec2(p.x + 141, p.y + 470), ImColor(22, 21, 26, 255), 1.000000);
+
 		ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(p.x + 142, p.y + 73), ImVec2(p.x + 191, p.y + 470), ImColor(22, 21, 26, 255), 0, 15);
 
-		
+
 		ImGui::SetCursorPos({ (float)2, (float)20 });
 		ImGui::Image(tImage, ImVec2(130, 30));
 		ImGui::SetCursorPos({ (float)100, (float)26 });
@@ -1029,26 +1030,29 @@ void main_window::draw_main_window() {
 			if (tab("Aimbot", ICON_FA_CROSSHAIRS, selectedtab == 1))
 				selectedtab = 1;
 			ImGui::SameLine();
+			if (tab("HVH", ICON_FA_BRAIN, selectedtab == 6))
+				selectedtab = 6;
+			SameLine();
 			if (tab("Visuals", ICON_FA_ADJUST, selectedtab == 2))
 				selectedtab = 2;
 			ImGui::SameLine();
 			if (tab("Misc", ICON_FA_COG, selectedtab == 3))
 				selectedtab = 3;
 			ImGui::SameLine();
-				ImGui::SameLine();
+			ImGui::SameLine();
 			if (tab("Settings", ICON_FA_WRENCH, selectedtab == 5))
 				selectedtab = 5;
 			ImGui::SameLine();
 			if (tab("Credits", ICON_FA_WHEELCHAIR, selectedtab == 4))
-				selectedtab = 4;	
-			
+				selectedtab = 4;
+
 		}
 		ImGui::EndGroup();
 
 		ImGui::SetCursorPos({ (float)141, (float)73 });
-		ImGui::BeginGroup(); 
+		ImGui::BeginGroup();
 		{
-			if (selectedtab==1) {
+			if (selectedtab == 1) {
 
 				if (category(ICON_FA_CROSSHAIRS, selectedcategory == 0))
 					selectedcategory = 0;
@@ -1066,6 +1070,10 @@ void main_window::draw_main_window() {
 				if (category(ICON_FA_COGS, selectedcategory == 0))
 					selectedcategory = 0;
 			}
+
+			/*if (selectedtab == 6) {
+				if (category(ICON_FA))
+			}*/
 		}
 		ImGui::EndGroup();
 
@@ -1090,7 +1098,7 @@ void main_window::draw_main_window() {
 				if (subtab("Lua", selectedsubtab == 2))
 					selectedsubtab = 2;
 			}
-			if(selectedtab==5)
+			if (selectedtab == 5)
 			{
 				if (subtab("Config", selectedsubtab == 0))
 					selectedsubtab = 0;
@@ -1106,13 +1114,50 @@ void main_window::draw_main_window() {
 			/*if (begincombo("Combo", "Preview", NULL))
 				ImGui::Selectable("Preview", true),
 				ImGui::EndCombo();*/
+			if (selectedtab == 6) {
+
+				/*static const char* CHAR_AA_Pitch[] = {
+					"Disabled",
+					"Dance",
+					"Up",
+					"Down",
+					"FakeUp",
+					"FakeDown"
+				};
+				static const char* CHAR_AA_Yaw[] = {
+					"Disabled",
+					"Backward",
+					"Sideways",
+					"Spin",
+					"Random",
+					"Jitter",
+					"Lisp"
+				};
+				static const char* CHAR_AA_fYaw[] = {
+
+					"Disabled",
+					"Backward",
+					"Sideways",
+					"Spin",
+					"Random",
+					"Jitter"
+				};
+				combo("Pitch", &settings::get_int("rage_anti_aim_type_pitch"), CHAR_AA_Pitch, IM_ARRAYSIZE(CHAR_AA_Pitch));
+				combo("Yaw", &settings::get_int("rage_anti_aim_type_yaw"), CHAR_AA_Yaw, IM_ARRAYSIZE(CHAR_AA_Yaw));
+				combo("Fake Yaw", &settings::get_int("rage_anti_aim_type_yaw_f"), CHAR_AA_fYaw, IM_ARRAYSIZE(CHAR_AA_fYaw));*/
+				checkbox("Fake Duck", &settings::get_bool("fake_duck"));
+				Hotkey("Fake Duck Key", &settings::get_int("fake_duck_key"));
+				slider_int("Fakelags", &settings::get_int("fake_lags_amount"), 0, 16, "%d", 0);
+			}
+
 			if (selectedtab == 1) {
 				if (selectedsubtab == 0 && selectedcategory == 0) { //general
-					checkbox("Enable", &globals::aimbotenable); // aimbot_autofire norecoil nospread aimbot_fov_draw aimbot_silent aimbot_draw_target
+					checkbox("Enable", &settings::get_bool("aim_enable"));
 					checkbox("AutoFire", &settings::get_bool("aimbot_autofire"));
 					checkbox("NoRecoil", &settings::get_bool("norecoil"));
 					checkbox("NoSpread", &settings::get_bool("nospread"));
 					checkbox("Silent", &settings::get_bool("aimbot_silent"));
+
 					int aa;
 					int bones = settings::get_int("aimbot_bones");
 					if (begincombo("Bone", "Bones", NULL)) {
@@ -1132,7 +1177,8 @@ void main_window::draw_main_window() {
 					}
 
 					slider_int("FOV", &settings::get_int("aimbot_fov"), 0, 180, NULL, NULL);
-					Hotkey("Aimbot Key", &globals::aimbotkey);
+					slider_int("Smooth", &settings::get_int("aim_smooth"), 0, 100, "%d", NULL);
+					Hotkey("Aimbot Key", &settings::get_int("aim_key"));
 				}
 				else if (selectedsubtab == 0 && selectedcategory == 1)
 				{
@@ -1140,15 +1186,17 @@ void main_window::draw_main_window() {
 					ImGui::SameLine();
 					ImGui::SetCursorPosY(GetCursorPosY() + 5);
 					ColorEdit44("", globals::colorfov, ImGuiColorEditFlags_NoInputs);
+
+
 					checkbox("Line Target", &settings::get_bool("aimbot_draw_target"));
 					ImGui::SameLine();
 					ImGui::SetCursorPosY(GetCursorPosY() + 5);
 					ColorEdit44(" ", globals::colortarger, ImGuiColorEditFlags_NoInputs);
 				}
 			}
-			else if(selectedtab==2)
+			else if (selectedtab == 2)
 			{
-				if (selectedsubtab == 0) 
+				if (selectedsubtab == 0)
 				{
 					static const char* text[]{ "border", "corner" };
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
@@ -1174,6 +1222,8 @@ void main_window::draw_main_window() {
 					checkbox("Job", &settings::get_bool("esp_player_team"));
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Distance ", &settings::get_bool("esp_player_dist"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Armor", &settings::get_bool("esp_player_armor"));
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					combo("Box Type", &settings::get_int("esp_type"), text, IM_ARRAYSIZE(text));
 				}
@@ -1213,7 +1263,7 @@ void main_window::draw_main_window() {
 					slider_int("Custom Fov", &settings::get_int("custom_fov"), 0, 180, NULL, NULL);
 					slider_int("Custom Aspect Ratio", &settings::get_int("custom_aspect_ratio"), 0, 180, NULL, NULL);
 					slider_int("ThirdPerson Distance", &settings::get_int("third_person_distance"), 0, 180, NULL, NULL);
-					Hotkey("ThirdPerson Key", &globals::thirdpersonkey);
+					Hotkey("ThirdPerson Key", &settings::get_int("third_person_key"));
 				}
 				else if (selectedsubtab == 1)
 				{
@@ -1302,7 +1352,7 @@ void main_window::draw_main_window() {
 					static auto load_configs = []() {
 						std::vector<std::string> items = {};
 
-						std::string path= get_lua_dir(); 
+						std::string path = get_lua_dir();
 						if (!filesystem::is_directory(path))
 							filesystem::create_directories(path);
 
@@ -1318,7 +1368,7 @@ void main_window::draw_main_window() {
 						configs = load_configs();
 					}
 					ImGui::SetCursorPosX(200);
-					ImGui::ListBoxHeader("##luas", {338,230});
+					ImGui::ListBoxHeader("##luas", { 338,230 });
 					{
 						auto clean_item_name = [](const char* name) -> const char* {
 							if (name[0] == 'C')
@@ -1345,7 +1395,7 @@ void main_window::draw_main_window() {
 					if (button("Run", ImVec2(303, 25)))
 					{
 						std::string code;
-						read_file(code,globals::lua);
+						read_file(code, globals::lua);
 						lua_futures::add_code_to_run(code);
 					}
 					if (button("Refresh", ImVec2(303, 25)))
@@ -1369,7 +1419,7 @@ void main_window::draw_main_window() {
 					if (button("Unload", ImVec2(303, 25)))
 						globals::unload = true;
 				}
-				
+
 				if (selectedsubtab == 0) {
 					static std::vector<std::string> configs;
 
@@ -1395,9 +1445,9 @@ void main_window::draw_main_window() {
 					static std::string current_config;
 
 					static char config_name[32];
-					
+
 					static std::string paths;
-					
+
 					ImGui::SetCursorPosX(200);
 
 					ImGui::ListBoxHeader("##configs", { 338,230 });
@@ -1435,25 +1485,32 @@ void main_window::draw_main_window() {
 						settings::save_to_file(paths);
 						is_configs_loaded = false;
 					}
-						if (button("Load", ImVec2(303, 25)))
-						{
-							settings::load_from_file(paths);
-						}
+					if (button("Load", ImVec2(303, 25)))
+					{
 
-						if (button("Save", ImVec2(303, 25)))
-							settings::save_to_file(paths);
+						settings::load_from_file(paths);
 
-						if (button("Delete", ImVec2(303, 25)) && filesystem::remove(current_config)) {
-							current_config.clear();
-							is_configs_loaded = false;
-						}
-					
+					}
+
+					if (button("Save", ImVec2(303, 25))) {
+
+						settings::save_to_file(paths);
+
+					}
+					if (button("Delete", ImVec2(303, 25)) && filesystem::remove(current_config)) {
+						current_config.clear();
+						is_configs_loaded = false;
+					}
+
 					if (button("Refresh", ImVec2(303, 25)))
 						is_configs_loaded = false;
-					
+					if (button("Open Folder", ImVec2(303, 25)))
+					{
+						ShellExecute(NULL, NULL, get_lua_dir().c_str(), NULL, NULL, SW_SHOWNORMAL);
+					}
 				}
 			}
-		
+
 		}
 		ImGui::EndGroup();
 	}
@@ -1461,7 +1518,7 @@ void main_window::draw_main_window() {
 
 #if defined(WITTCHEN_BETA) or defined(_DEBUG)
 	PushStyleColor(ImGuiCol_WindowBg, ImColor(18, 18, 18).Value);
-	
+
 	ImGui::Begin(u8"Скура гей");
 
 	Wittchen::DrawEspEditor();
@@ -1471,10 +1528,10 @@ void main_window::draw_main_window() {
 
 	if (Button("Load config")) settings::load_from_file("C:\\cfg.json");
 	if (Button("Save config")) settings::save_to_file("C:\\cfg.json");
-	
+
 	ImGui::End();
 
 	PopStyleColor();
 #endif
-	
+
 }

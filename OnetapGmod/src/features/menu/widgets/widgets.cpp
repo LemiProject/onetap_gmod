@@ -158,21 +158,25 @@ c_color Wittchen::WitthcenEspStyleEditor::GetAutoColor(const std::string& name, 
 }
 c_color enttts;
 c_color Wittchen::WitthcenEspStyleEditor::GetAutoColor(const std::string& name, c_base_player* player) {
+	auto sid = player->get_steam_id();
 	if (name == "%health") {
 		float g = 255 * (player->get_health_procentage() / 100.f);
 		return { 255 - g, g, 0 };
 	}
+	if (name == "%armor") {
+		return colors::blue_color;
+	}
 	if (name == "%team_name") {
-		return player->get_team_color();
+		return (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? c_color(globals::colorfriend[0] * 255.f, globals::colorfriend[1] * 255.f, globals::colorfriend[2] * 255.f, globals::colorfriend[3] * 255.f) : player->get_team_color();
 	}
 	if (name == "%activeweapon")
 	{
-		return colors::yellow_color;
+		return (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? c_color(globals::colorfriend[0] * 255.f, globals::colorfriend[1] * 255.f, globals::colorfriend[2] * 255.f, globals::colorfriend[3] * 255.f) : colors::yellow_color;
 	}
 	colors::rp_color = player->get_team_color();
 	//TODO: IMPL OTHER
 
-	return colors::white_color;
+	return (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? c_color(globals::colorfriend[0] * 255.f, globals::colorfriend[1] * 255.f, globals::colorfriend[2] * 255.f, globals::colorfriend[3] * 255.f) : colors::white_color;
 }
 
 Wittchen::WitthcenEspStyleEditor* Wittchen::GetWittchenEspStyleEditor() {
@@ -193,6 +197,9 @@ void Wittchen::InitializeEspStyleEditor() {
 		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
 		"%distance", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::down
 	} });
+		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
+		"%armor", directx_render::e_font_flags::font_outline, -1.f, colors::blue_color, true, (int)esp::e_esp_text_position::right
+		} });
 		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
 		"%health", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
 		} });

@@ -441,7 +441,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	}
 
 	if (settings::get_bool("fake_lags")) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
-	if (settings::get_bool("fake_duck") && GetAsyncKeyState(globals::fakelagkey)) {
+	if (settings::get_bool("fake_duck") && GetAsyncKeyState(settings::get_int("fake_duck_key"))) {
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;
 		if (send_packets) cmd->buttons |= IN_DUCK;  else cmd->buttons &= ~IN_DUCK;
 	}
@@ -562,7 +562,7 @@ void override_view_hook::hook(i_client_mode* self, c_view_setup& view) {
 	}
 
 	static bool should_reset_input_state;
-	if (GetAsyncKeyState(globals::thirdpersonkey)&1)
+	if (GetAsyncKeyState(settings::get_int("third_person_key")) & 1)
 		globals::thirdtemp = !globals::thirdtemp;
 	if (settings::get_bool("third_person") && globals::thirdtemp && !globals::panic) {
 		c_vector view_vec; math::angle_to_vector(view.angles, view_vec);

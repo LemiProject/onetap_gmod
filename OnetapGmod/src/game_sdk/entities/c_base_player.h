@@ -129,7 +129,18 @@ public:
 		}
 		return name;
 	}
-	
+	int get_armor()
+	{
+		CHECK_THIS{};
+		auto glua = interfaces::lua_shared->get_lua_interface((int)e_special::glob);
+		if (!glua) return 0;
+		c_lua_auto_pop p(glua);
+		push_entity();
+		glua->get_field(-1, "Armor");
+		glua->push(-2);
+		glua->call(1, 1);
+		return (int)glua->get_number();
+	}
 	std::string get_team_name() {
 		CHECK_THIS{};
 		auto glua = interfaces::lua_shared->get_lua_interface((int)e_special::glob);

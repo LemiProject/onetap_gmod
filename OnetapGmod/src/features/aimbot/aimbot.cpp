@@ -33,7 +33,7 @@ bool can_do_damage(c_base_player* player, const c_vector& position) {
 	aimbot::c_aimbot_trace_filter filter;
 	filter.lp = get_local_player();
 	filter.ent = player;
-	
+
 	game_utils::trace_ray(tr, get_local_player()->get_eye_pos(), position, &filter);
 
 	return tr.fraction == 1.f;
@@ -45,14 +45,14 @@ bool on_bone_not_exist(shoot_pos_t& sp, c_base_player* player) {
 		return false;
 	q_angle real_angle;
 	interfaces::engine->get_view_angles(real_angle);
-	
+
 	sp.fov = game_utils::get_fov(real_angle, game_utils::calc_angle(get_local_player()->get_eye_pos(), position));
 	auto angle = math::get_angle(get_local_player()->get_eye_pos(), position);
 	if (!angle.is_valid() || !can_do_damage(player, position))
 		return false;
 	sp.angle = angle;
 	sp.position = position;
-	
+
 	return true;
 	//return false;
 }
@@ -67,7 +67,7 @@ bool get_shoot_pos(shoot_pos_t& sp, c_base_player* player) {
 
 	q_angle real_angle;
 	interfaces::engine->get_view_angles(real_angle);
-	
+
 	for (const auto& i : entity_bones_by_class) {
 		if ((i.first == "head" && !(bones & (int)e_bones::head)) || (i.first == "arm" && !(bones & (int)e_bones::arm))
 			|| (i.first == "foot" && !(bones & (int)e_bones::foot)) || (i.first == "pelvis" && !(bones & (int)e_bones::pelvis)) || (i.first == "body" && !(bones & (int)e_bones::body)))
@@ -104,12 +104,12 @@ bool get_target(target_t& target)
 	if (!get_local_player())
 		return false;
 
-	target_t tmp{ nullptr,{}};
+	target_t tmp{ nullptr,{} };
 	tmp.shoot_pos.fov = FLT_MAX;
-	
+
 	for (auto i : game_utils::get_valid_players(false)) {
 		auto player = get_player_by_index(i);
-		if(player->is_player()) {
+		if (player->is_player()) {
 			shoot_pos_t tmp_shoot_pos;
 
 			if (!get_shoot_pos(tmp_shoot_pos, player))
@@ -143,27 +143,39 @@ c_vector aimbot::get_aimbot_target()
 	return target.shoot_pos.position;
 }
 
+q_angle do_smooth(const q_angle& from, const q_angle& to, float smooth_val) {
+	auto delta = to - from;
+	delta.normalize();
+	delta /= q_angle(smooth_val, smooth_val, 0);
+	auto out = to - delta;
+	out.normalize();
+	return out;
+}
+
 void aimbot::run_aimbot(c_user_cmd& cmd) {
-	if (!globals::aimbotenable)
+	if (!settings::get_bool("aim_enable"))
 		return;
-	if (!GetAsyncKeyState(globals::aimbotkey) && globals::aimbotkey != 0)
+	if (!GetAsyncKeyState(settings::get_int("aim_key")))
 		return;
 	if (!cmd.is_in_fire() && !settings::get_bool("aimbot_autofire"))
 		return;
-	
+
 	target_t target;
-	
+
 	if (!get_target(target))
 		return;
 
 	last_target_id = target.idx;
 	last_target_time = interfaces::engine->get_time_stamp_from_start();
 
+	if (settings::get_int("aim_smooth") > 0)
+		target.shoot_pos.angle = do_smooth(cmd.viewangles, target.shoot_pos.angle, settings::get_int("aim_smooth") / 100.f);
+
 	cmd.viewangles = target.shoot_pos.angle;
 
 	if (!settings::get_bool("aimbot_silent"))
 		interfaces::engine->set_view_angles(cmd.viewangles);
-	
+
 	if (settings::get_bool("aimbot_autofire")) {
 		cmd.buttons |= IN_ATTACK;
 	}
@@ -172,7 +184,7 @@ void aimbot::run_aimbot(c_user_cmd& cmd) {
 void aimbot::norecoil(c_user_cmd& cmd) {
 	if (!settings::get_bool("norecoil"))
 		return;
-	
+
 	if (cmd.buttons & IN_ATTACK)
 		cmd.viewangles -= get_local_player()->get_view_punch_angles();
 }
@@ -180,7 +192,7 @@ void aimbot::norecoil(c_user_cmd& cmd) {
 void aimbot::nospread(c_user_cmd& cmd) {
 	if (!settings::get_bool("nospread"))
 		return;
-	
+
 	auto wep = get_local_player()->get_active_weapon();
 
 	if (cmd.buttons & IN_ATTACK) {
@@ -222,7 +234,7 @@ bool aimbot::start_prediction(c_user_cmd& cmd)
 	interfaces::prediction->setup_move(pred_data.player, &cmd, interfaces::move_helper, &pred_data.move_data);
 	interfaces::game_movement->process_movement(pred_data.player, &pred_data.move_data);
 	interfaces::prediction->finish_move(pred_data.player, &cmd, &pred_data.move_data);*/
-	
+
 	return true;
 }
 

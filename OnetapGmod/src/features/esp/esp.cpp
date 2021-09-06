@@ -52,6 +52,8 @@ std::string format_text_for_entity(const std::string& str, c_base_entity* ent) {
 				s = replace_all(s, "%name", ply->get_name());
 			if (settings::get_bool("esp_player_rpname"))
 				s = replace_all(s, "%rpname", ply->get_rp_name(ply->get_index()));
+			if (settings::get_bool("esp_player_armor"))
+				s = replace_all(s, "%armor", std::to_string(ply->get_armor()));
 			if (settings::get_bool("esp_player_hp"))
 				s = replace_all(s, "%health", std::to_string(ply->get_health()));
 			if (settings::get_bool("esp_player_team"))
