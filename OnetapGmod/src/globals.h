@@ -8,6 +8,8 @@
 #include <mutex>
 #include <vector>
 
+#include "json.hpp"
+
 namespace globals {
 	inline HINSTANCE dllInstance;
 
@@ -56,6 +58,8 @@ namespace globals {
 	inline int thirdpersonkey;
 	inline std::string lua;
 	
+	void on_save(nlohmann::json& out);
+	void on_load(const nlohmann::json& in);
 }
 
 enum class e_bones : int {

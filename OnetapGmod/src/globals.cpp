@@ -1,5 +1,7 @@
 #include "globals.h"
 
+#include "json.hpp"
+
 constexpr int bool_idx = 0;
 constexpr int int_idx = 1;
 
@@ -59,3 +61,27 @@ std::vector<std::string> globals::c_entity_list::data()
 {
     return classes;
 }
+
+void globals::on_save(nlohmann::json& out) {
+    out["colors"]["colorfov"] = colorfov;
+    out["colors"]["colortarger"] = colortarger;
+    out["colors"]["colorespplayer"] = colorespplayer;
+    out["colors"]["colorespentity"] = colorespentity;
+    out["colors"]["colorfriend"] = colorfriend;
+}
+
+void savecolor(float* data, float* new_data) {
+    data[0] = new_data[0];
+    data[1] = new_data[1];
+    data[2] = new_data[2];
+    data[3] = new_data[3];
+}
+
+void globals::on_load(const nlohmann::json& in) {
+    savecolor(colorfov, in["colors"]["colorfov"].get<std::array<float, 4>>().data());
+    savecolor(colortarger, in["colors"]["colortarger"].get<std::array<float, 4>>().data());
+    savecolor(colorespentity, in["colors"]["colorespentity"].get<std::array<float, 4>>().data());
+    savecolor(colorfriend, in["colors"]["colorfriend"].get<std::array<float, 4>>().data());
+    savecolor(colorespplayer, in["colors"]["colorespplayer"].get<std::array<float, 4>>().data());
+}
+

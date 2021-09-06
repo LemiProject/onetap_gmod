@@ -113,16 +113,18 @@ void settings::save_to_file(const std::filesystem::path& path) {
 			return 0;
 		};
 		
-		json[i.first] = get_value();
+		json["config"][i.first] = get_value();
 	}
 
+	globals::on_save(json);
+	
 	std::ofstream s(path.generic_u8string());
 	s << json.dump() << std::endl;
 }
 
 void settings::load_from_file(const std::filesystem::path& path) {
 	std::string file_content; file_tools::read_file(file_content, path.generic_u8string());
-	auto json = nlohmann::json::parse(file_content);
+	auto json = nlohmann::json::parse(file_content)["config"];
 
 	for (const auto& i : json.items()) {
 		auto get_value = [&]() -> std::any {
@@ -144,6 +146,8 @@ void settings::load_from_file(const std::filesystem::path& path) {
 
 		settings_storage[i.key()] = get_value();
 	}
+
+	globals::on_load(json);
 }
 
 bool var_exist(var_id_t_non_copy name) {
