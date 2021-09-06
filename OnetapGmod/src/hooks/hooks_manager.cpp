@@ -158,6 +158,14 @@ struct get_aspect_ration_hook {
 	static float __fastcall hook(void* self);
 };
 
+struct render_view_hook {
+	static inline constexpr uint32_t idx = 6;
+
+	using fn = bool(__fastcall*)(void*, c_view_setup&, int, int);
+	static inline fn original = nullptr;
+	static bool __fastcall hook(void* view_render, c_view_setup& setup, int clear_flags, int what_to_draw);
+};
+
 struct view_render_hook {
 	using fn = void(__fastcall*)(void*, void*);
 	static inline fn original = nullptr;
@@ -207,6 +215,7 @@ void hooks_manager::init() {
 	CREATE_HOOK(interfaces::prediction, run_command_hook::idx, run_command_hook::hook, run_command_hook::original);
 	CREATE_HOOK(interfaces::engine, get_aspect_ration_hook::idx, get_aspect_ration_hook::hook, get_aspect_ration_hook::original);
 	CREATE_HOOK(interfaces::mat_render_context, read_pixels_hook::idx, read_pixels_hook::hook, read_pixels_hook::original);
+	CREATE_HOOK(interfaces::_view, render_view_hook::idx, render_view_hook::hook, render_view_hook::original);
 	
 	create_hook((void*)memory_utils::pattern_scanner("client.dll", "40 55 53 57 48 8D 6C 24 ? 48 81 EC ? ? ? ? 48 8B DA"), override_view_hook::hook, (void**)(&override_view_hook::original));
 	create_hook((void*)cl_move, cl_move_hook::hook, (void**)(&cl_move_hook::original));
@@ -597,6 +606,13 @@ float get_aspect_ration_hook::hook(void* self) {
 		return (float)rat / 100.f;
 	}
 	return original(self);
+}
+
+bool render_view_hook::hook(void* view_render, c_view_setup& setup, int clear_flags, int what_to_draw) {
+
+	setup.fov = 150.f;
+	
+	return original(view_render, setup, clear_flags, what_to_draw);
 }
 
 void view_render_hook::hook(chl_client* self, vrect_t* rect) {

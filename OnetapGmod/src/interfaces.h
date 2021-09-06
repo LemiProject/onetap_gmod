@@ -18,6 +18,8 @@
 #include "game_sdk/interfaces/movehelper.h"
 #include "game_sdk/interfaces/cinput.h"
 
+class c_view_render;
+
 namespace interfaces {
 	inline c_engine_client* engine;
 	inline c_client_entity_list* entity_list;
@@ -37,6 +39,7 @@ namespace interfaces {
 	inline i_game_movement* game_movement;
 	inline i_move_helper* move_helper;
 	inline CInput* input;
+	inline c_view_render* _view;
 	
 	void init_interfaces();
 }
