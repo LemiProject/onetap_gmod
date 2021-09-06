@@ -1098,12 +1098,19 @@ void main_window::draw_main_window() {
 				if (subtab("Lua", selectedsubtab == 2))
 					selectedsubtab = 2;
 			}
+			if(selectedtab == 6)
+			{
+				if (subtab("General", selectedsubtab == 0))
+					selectedsubtab = 0;
+				if (subtab("Anti-Aim", selectedsubtab == 1))
+					selectedsubtab = 1;
+			}
 			if (selectedtab == 5)
 			{
-				if (subtab("Config", selectedsubtab == 0))
-					selectedsubtab = 0;
 				if (subtab("General", selectedsubtab == 1))
 					selectedsubtab = 1;
+				if (subtab("Config", selectedsubtab == 0))
+					selectedsubtab = 0;
 			}
 		}
 		ImGui::EndGroup();
@@ -1111,43 +1118,14 @@ void main_window::draw_main_window() {
 		ImGui::SetCursorPos({ (float)217, (float)85 });
 		ImGui::BeginGroup();
 		{
-			/*if (begincombo("Combo", "Preview", NULL))
-				ImGui::Selectable("Preview", true),
-				ImGui::EndCombo();*/
+			
 			if (selectedtab == 6) {
-
-				/*static const char* CHAR_AA_Pitch[] = {
-					"Disabled",
-					"Dance",
-					"Up",
-					"Down",
-					"FakeUp",
-					"FakeDown"
-				};
-				static const char* CHAR_AA_Yaw[] = {
-					"Disabled",
-					"Backward",
-					"Sideways",
-					"Spin",
-					"Random",
-					"Jitter",
-					"Lisp"
-				};
-				static const char* CHAR_AA_fYaw[] = {
-
-					"Disabled",
-					"Backward",
-					"Sideways",
-					"Spin",
-					"Random",
-					"Jitter"
-				};
-				combo("Pitch", &settings::get_int("rage_anti_aim_type_pitch"), CHAR_AA_Pitch, IM_ARRAYSIZE(CHAR_AA_Pitch));
-				combo("Yaw", &settings::get_int("rage_anti_aim_type_yaw"), CHAR_AA_Yaw, IM_ARRAYSIZE(CHAR_AA_Yaw));
-				combo("Fake Yaw", &settings::get_int("rage_anti_aim_type_yaw_f"), CHAR_AA_fYaw, IM_ARRAYSIZE(CHAR_AA_fYaw));*/
-				checkbox("Fake Duck", &settings::get_bool("fake_duck"));
-				Hotkey("Fake Duck Key", &settings::get_int("fake_duck_key"));
-				slider_int("Fakelags", &settings::get_int("fake_lags_amount"), 0, 16, "%d", 0);
+				if (!selectedsubtab)
+				{
+					checkbox("Fake Duck", &settings::get_bool("fake_duck"));
+					Hotkey("Fake Duck Key", &settings::get_int("fake_duck_key"));
+					slider_int("Fakelags", &settings::get_int("fake_lags_amount"), 0, 16, "%d", 0);
+				}
 			}
 
 			if (selectedtab == 1) {
@@ -1177,7 +1155,7 @@ void main_window::draw_main_window() {
 					}
 
 					slider_int("FOV", &settings::get_int("aimbot_fov"), 0, 180, NULL, NULL);
-					slider_int("Smooth", &settings::get_int("aim_smooth"), 0, 100, "%d", NULL);
+					//slider_int("Smooth", &settings::get_int("aim_smooth"), 0, 100, "%d", NULL);
 					Hotkey("Aimbot Key", &settings::get_int("aim_key"));
 				}
 				else if (selectedsubtab == 0 && selectedcategory == 1)
@@ -1485,14 +1463,14 @@ void main_window::draw_main_window() {
 						settings::save_to_file(paths);
 						is_configs_loaded = false;
 					}
-					if (button("Load", ImVec2(303, 25)))
+					if (button("Load", ImVec2(150, 25)))
 					{
 
 						settings::load_from_file(paths);
 
 					}
-
-					if (button("Save", ImVec2(303, 25))) {
+					SameLine();
+					if (button("Save", ImVec2(146, 25))) {
 
 						settings::save_to_file(paths);
 

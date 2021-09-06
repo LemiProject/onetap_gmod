@@ -164,7 +164,7 @@ c_color Wittchen::WitthcenEspStyleEditor::GetAutoColor(const std::string& name, 
 		return { 255 - g, g, 0 };
 	}
 	if (name == "%armor") {
-		return colors::blue_color;
+		return colors::gluboy_color;
 	}
 	if (name == "%team_name") {
 		return (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? c_color(globals::colorfriend[0] * 255.f, globals::colorfriend[1] * 255.f, globals::colorfriend[2] * 255.f, globals::colorfriend[3] * 255.f) : player->get_team_color();
@@ -198,10 +198,10 @@ void Wittchen::InitializeEspStyleEditor() {
 		"%distance", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::down
 	} });
 		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
-		"%armor", directx_render::e_font_flags::font_outline, -1.f, colors::blue_color, true, (int)esp::e_esp_text_position::right
+		"%health", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
 		} });
 		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
-		"%health", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::right
+		"%armor", directx_render::e_font_flags::font_outline, -1.f, colors::gluboy_color, true, (int)esp::e_esp_text_position::right
 		} });
 		g_style_editor.temp_box.text_storage.strings.insert({ esp::c_esp_box::generate_id(), esp::esp_text_t{
 			"%team_name", directx_render::e_font_flags::font_outline, -1.f, colors::white_color, true, (int)esp::e_esp_text_position::top
