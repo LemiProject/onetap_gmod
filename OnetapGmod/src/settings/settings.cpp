@@ -126,6 +126,9 @@ void settings::load_from_file(const std::filesystem::path& path) {
 	std::string file_content; file_tools::read_file(file_content, path.generic_u8string());
 	auto json = nlohmann::json::parse(file_content)["config"];
 
+	if (json.is_null())
+		MessageBox(0, "It config too old", "OTV", MB_OK);
+	
 	for (const auto& i : json.items()) {
 		auto get_value = [&]() -> std::any {
 				switch (i.value().type()) {
