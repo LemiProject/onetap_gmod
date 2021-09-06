@@ -609,9 +609,6 @@ float get_aspect_ration_hook::hook(void* self) {
 }
 
 bool render_view_hook::hook(void* view_render, c_view_setup& setup, int clear_flags, int what_to_draw) {
-
-	setup.fov = 150.f;
-	
 	return original(view_render, setup, clear_flags, what_to_draw);
 }
 
