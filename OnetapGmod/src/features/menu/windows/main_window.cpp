@@ -1113,8 +1113,6 @@ void main_window::draw_main_window() {
 					checkbox("NoRecoil", &settings::get_bool("norecoil"));
 					checkbox("NoSpread", &settings::get_bool("nospread"));
 					checkbox("Silent", &settings::get_bool("aimbot_silent"));
-					slider_int("Smooth", &settings::get_int("aim_smooth"), 0, 100, "%d", 0);
-					
 					int aa;
 					int bones = settings::get_int("aimbot_bones");
 					if (begincombo("Bone", "Bones", NULL)) {
