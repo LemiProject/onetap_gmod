@@ -27,6 +27,8 @@ internal::settings_storage_type settings_storage{
 	{"esp_player_armor",false},
 	{"fake_duck", false},
 	{"aimbot_key",0},
+	{"rage_antiaim_yaw",0},
+	{"rage_antiaim_pitch",0},
 	{"esp_type",0},
 	{"esp_type_ent",0},
 	/*{"rage_anti_aim_type_yaw",0},
@@ -58,12 +60,18 @@ internal::settings_storage_type settings_storage{
 	{"custom_viewmodel_fov", 0},
 	{"custom_fov", 0},
 	{"custom_aspect_ratio", 0},
+	{"freecam",false},
+	{"freecam_key",0},
+	{"freecam_speed",1},
 	{"third_person_distance", 50},
 	{"fake_lags_amount", 0},
 	{"fake_duck_key",0},
 	{"autostrafe", false},
 	{"add_entity_bind", 0},
 	{"menu_key", (int)VK_INSERT},
+	{"manual_l", 0x5A},
+	{"manual_r", 0x43},
+	{"manual_b", 0x58},
 	{"panic_key", (int)VK_HOME}
 
 };

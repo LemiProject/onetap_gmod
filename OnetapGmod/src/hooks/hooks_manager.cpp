@@ -280,6 +280,7 @@ long reset_hook::hook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* present_p
 	return ret;
 }
 
+bool is_in_freecamera;
 bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* cmd) {
 	auto fix_movement = [&](c_user_cmd& old_cmd) {
 		c_base_player* local_player = get_local_player();
@@ -317,6 +318,47 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 		cmd->buttons &= ~IN_MOVELEFT;
 		cmd->buttons &= ~IN_FORWARD;
 		cmd->buttons &= ~IN_BACK;
+	};
+	auto anti_aim = [&]()
+	{
+
+
+		if ((cmd->buttons & IN_ATTACK) || (cmd->buttons & IN_USE))
+			return;
+
+		auto pitch_type = static_cast<globals::e_pitch>(settings::get_int("rage_antiaim_pitch"));
+		auto yaw_type = static_cast<globals::e_yaw>(settings::get_int("rage_antiaim_yaw"));
+
+		if (pitch_type != globals::e_pitch::none)
+		{
+			switch (pitch_type)
+			{
+			case globals::e_pitch::down:
+				cmd->viewangles.x = 90.f;
+				break;
+			case globals::e_pitch::emotional:
+				cmd->viewangles.x = 89.f;
+				break;
+			case globals::e_pitch::up:
+				cmd->viewangles.x = -90.f;
+				break;
+			default: break;
+			}
+		}
+
+		if (yaw_type != globals::e_yaw::none)
+		{
+			switch (yaw_type)
+			{
+			case globals::e_yaw::forward:
+				cmd->viewangles.y += 180.f;
+				break;
+			case globals::e_yaw::backward:
+				cmd->viewangles.y += -180.f;
+				break;
+			default: break;
+			}
+		}
 	};
 	auto bhop = [&]() {
 		auto local_player = get_local_player();
@@ -441,7 +483,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 			}
 		}
 	}
-
+	anti_aim();
 	if (settings::get_bool("fake_lags")) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
 	if (settings::get_bool("fake_duck") && GetAsyncKeyState(settings::get_int("fake_duck_key"))) {
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;
@@ -610,7 +652,68 @@ float get_aspect_ration_hook::hook(void* self) {
 	return original(self);
 }
 
+c_vector savedPos = c_vector();
+
+c_vector FreeCam(c_view_setup& view)
+{
+	c_vector    vPos = savedPos;
+	q_angle    vView = view.angles;
+
+	c_vector fwd, rt, up;
+	math::angle_to_vectors(vView, fwd, rt, up);
+
+	float speed = settings::get_int("freecam_speed");
+
+	if (GetAsyncKeyState(VK_SHIFT))
+		speed *= 2;
+
+	for (int i = 0; i < 255; i++)
+		if (GetAsyncKeyState(i))
+			switch (i)
+			{
+			case VK_SPACE:
+				vPos.z += 2.5f * speed;
+				break;
+
+			case VK_CONTROL:
+				vPos.z -= 2.5f * speed;
+				break;
+
+			case 'W':
+				vPos += fwd * speed;
+				break;
+
+			case 'S':
+				vPos -= fwd * speed;
+				break;
+
+			case 'A':
+				vPos -= rt * speed;
+				break;
+
+			case 'D':
+				vPos += rt * speed;
+				break;
+
+			default:
+				break;
+			}
+
+	return vPos;
+}
+
 bool render_view_hook::hook(void* view_render, c_view_setup& setup, int clear_flags, int what_to_draw) {
+	if (GetAsyncKeyState(settings::get_int("freecam_key")) & 1 && settings::get_bool("freecam"))
+		is_in_freecamera = !is_in_freecamera;
+	if (settings::get_bool("freecam") && is_in_freecamera) {
+		savedPos = FreeCam(setup);
+		setup.fov_viewmodel = 180;
+	}
+	else {
+		savedPos = setup.origin;
+	}
+
+	setup.origin = savedPos;
 	return original(view_render, setup, clear_flags, what_to_draw);
 }
 

@@ -38,7 +38,19 @@ namespace globals {
 		size_t size();
 		std::vector<std::string> data();
 	};
-
+	enum class e_pitch
+	{
+		none,
+		up,
+		down,
+		emotional,
+	};
+	enum class e_yaw
+	{
+		none,
+		forward,
+		backward,
+	};
 	inline c_entity_list entitys_to_draw;
 	inline bool unload;
 	inline bool aimbotenable;

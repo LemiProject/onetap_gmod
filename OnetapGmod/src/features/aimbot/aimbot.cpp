@@ -155,7 +155,7 @@ q_angle do_smooth(const q_angle& from, const q_angle& to, float smooth_val) {
 void aimbot::run_aimbot(c_user_cmd& cmd) {
 	if (!settings::get_bool("aim_enable"))
 		return;
-	if (!GetAsyncKeyState(settings::get_int("aim_key")))
+	if (!GetAsyncKeyState(settings::get_int("aim_key")) && settings::get_int("aim_key") != 0)
 		return;
 	if (!cmd.is_in_fire() && !settings::get_bool("aimbot_autofire"))
 		return;
