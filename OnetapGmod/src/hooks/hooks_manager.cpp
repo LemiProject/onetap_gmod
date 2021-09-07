@@ -180,6 +180,12 @@ struct read_pixels_hook {
 	static void __fastcall hook(i_mat_render_context* self, int x, int y, int width, int height, unsigned char* data, image_format dstFormat);
 };
 
+struct frame_stage_notify_hook {
+	using fn = void(__fastcall*)(void*, int);
+	static inline fn original;
+	static void __fastcall hook(chl_client* self, int frame_stage);
+};
+
 struct wndproc_hook
 {
 	static LRESULT STDMETHODCALLTYPE hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param);
@@ -221,6 +227,7 @@ void hooks_manager::init() {
 	create_hook((void*)cl_move, cl_move_hook::hook, (void**)(&cl_move_hook::original));
 	create_hook((void*)memory_utils::pattern_scanner("client.dll", "40 53 48 83 EC 20 E8 ? ? ? ? 48 8B 0D ? ? ? ?"), get_viewmodel_fov::hook, (void**)(&get_viewmodel_fov::original));
 	create_hook((void*)memory_utils::pattern_scanner("client.dll", "40 57 48 83 EC 20 83 7A 08 00"), view_render_hook::hook, (void**)(&view_render_hook::original));
+	create_hook((void*)memory_utils::pattern_scanner("client.dll", "48 83 EC 28 89 15 ? ? ? ?"), frame_stage_notify_hook::hook, (void**)(&frame_stage_notify_hook::original));
 	
 	if (const auto run_string_ex_fn_ptr = reinterpret_cast<run_string_ex::fn>(memory_utils::pattern_scanner(
 		"lua_shared.dll", "40 55 53 56 57 41 54 41 56 41 57 48 8D AC 24 ? ? ? ? 48 81 EC ? ? ? ? 48 8B 05 ? ? ? ? 48 33 C4 48 89 85 ? ? ? ? 49 8B F1")); run_string_ex_fn_ptr)
@@ -734,6 +741,11 @@ void read_pixels_hook::hook(i_mat_render_context* self, int x, int y, int width,
 	}
 
 	return original(self, x, y, width, height, data, dstFormat);
+}
+
+void frame_stage_notify_hook::hook(chl_client* self, int frame_stage) {
+
+	return original(self, frame_stage);
 }
 
 LRESULT STDMETHODCALLTYPE wndproc_hook::hooked_wndproc(HWND window, UINT message_type, WPARAM w_param, LPARAM l_param)
