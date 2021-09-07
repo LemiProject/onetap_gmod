@@ -385,6 +385,8 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	if (!cmd || !cmd->command_number || !interfaces::engine->is_in_game()) 
 		return original(self, frame_time, cmd);
 
+	c_user_cmd old_cmd = *cmd;
+	
 	bool& send_packets = *send_packets_ptr;
 	send_packets = (globals::game_info::chocked_packets > 21) ? true : send_packets;
 
@@ -406,7 +408,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 		aimbot::end_prediction();
 	}
 
-	if (settings::get_bool("fixmovement")) fix_movement(*cmd);
+	if (settings::get_bool("fixmovement")) fix_movement(old_cmd);
 
 	cmd->viewangles.normalize();
 	original(interfaces::client_mode, frame_time, cmd);
