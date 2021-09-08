@@ -57,7 +57,8 @@ namespace globals {
 	inline bool aimbot_autofire;
 	inline bool glua;
 	inline bool thirdtemp;
-
+	inline c_user_cmd lastCmd;
+	inline c_user_cmd lastRealCmd;
 	inline c_user_cmd last_cmd;
 	inline bool panic;
 	inline float colorfov[4]{255,255,255,1};

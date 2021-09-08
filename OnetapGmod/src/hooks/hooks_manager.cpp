@@ -288,7 +288,11 @@ long reset_hook::hook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* present_p
 }
 
 bool is_in_freecamera;
+q_angle viewangles1;
 bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* cmd) {
+	globals::lastCmd = *cmd;
+	static q_angle Viewangles;
+	static q_angle VirtualViewangles;
 	auto fix_movement = [&](c_user_cmd& old_cmd) {
 		c_base_player* local_player = get_local_player();
 
@@ -442,7 +446,14 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	auto lp = get_local_player();
 	if (!lp || !lp->is_alive()) return original(self, frame_time, cmd);
 
-	
+	if (is_in_freecamera) {
+		cmd->buttons = 0, cmd->forwardmove = cmd->sidemove = cmd->upmove = 0.f;
+		cmd->viewangles = globals::lastRealCmd.viewangles;
+	}
+	else
+	{
+		globals::lastRealCmd = *cmd;
+	}
 	if (settings::get_bool("bhop") && !(lp->get_flags() & (1 << 0)))
 		bhop();
 
@@ -456,6 +467,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 
 		aimbot::end_prediction();
 	}
+	viewangles1 = cmd->viewangles;
 
 	if (settings::get_bool("fixmovement")) fix_movement(old_cmd);
 
@@ -658,69 +670,50 @@ float get_aspect_ration_hook::hook(void* self) {
 	}
 	return original(self);
 }
-
-c_vector savedPos = c_vector();
-
-c_vector FreeCam(c_view_setup& view)
+void FreeCam(c_view_setup& view, c_vector& camPos)
 {
-	c_vector    vPos = savedPos;
-	q_angle    vView = view.angles;
-
-	c_vector fwd, rt, up;
-	math::angle_to_vectors(vView, fwd, rt, up);
+	if (camPos == c_vector(0, 0, 0))
+		camPos = view.origin;
 
 	float speed = settings::get_int("freecam_speed");
+	c_vector forward, right, up;
+	math::angle_to_vectors(view.angles, forward, right, up);
+	if (globals::lastCmd.buttons & IN_SPEED)
+		speed *= 5.f;
+	if (globals::lastCmd.buttons & IN_DUCK)
+		speed *= 0.5f;
+	if (globals::lastCmd.buttons & IN_JUMP)
+		camPos.z += speed;
+	if (globals::lastCmd.buttons & IN_FORWARD) camPos += forward * speed;
+	if (globals::lastCmd.buttons & IN_BACK) camPos -= forward * speed;
+	if (globals::lastCmd.buttons & IN_MOVERIGHT) camPos += right * speed;
+	if (globals::lastCmd.buttons & IN_MOVELEFT) camPos -= right * speed;
 
-	if (GetAsyncKeyState(VK_SHIFT))
-		speed *= 2;
 
-	for (int i = 0; i < 255; i++)
-		if (GetAsyncKeyState(i))
-			switch (i)
-			{
-			case VK_SPACE:
-				vPos.z += 2.5f * speed;
-				break;
-
-			case VK_CONTROL:
-				vPos.z -= 2.5f * speed;
-				break;
-
-			case 'W':
-				vPos += fwd * speed;
-				break;
-
-			case 'S':
-				vPos -= fwd * speed;
-				break;
-
-			case 'A':
-				vPos -= rt * speed;
-				break;
-
-			case 'D':
-				vPos += rt * speed;
-				break;
-
-			default:
-				break;
-			}
-
-	return vPos;
+	view.origin = camPos;
 }
 
 bool render_view_hook::hook(void* view_render, c_view_setup& setup, int clear_flags, int what_to_draw) {
+	static bool lastFreeCamState = false;
+	static c_vector camPos = c_vector(0, 0, 0);
 	if (GetAsyncKeyState(settings::get_int("freecam_key")) & 1 && settings::get_bool("freecam"))
 		is_in_freecamera = !is_in_freecamera;
 	if (settings::get_bool("freecam") && is_in_freecamera) {
-		savedPos = FreeCam(setup);
-		setup.fov_viewmodel = 180;
+		setup.angles = globals::lastCmd.viewangles;
+		lastFreeCamState = true;
+		FreeCam(setup, camPos);
+		interfaces::input->m_fCameraInThirdPerson = true;
 	}
 	else {
-		savedPos = setup.origin;
+		if (lastFreeCamState)
+		{
+			interfaces::engine->set_view_angles(globals::lastRealCmd.viewangles);
+			interfaces::input->m_fCameraInThirdPerson = false;
+		}
+		lastFreeCamState = false;
+		camPos = c_vector(0, 0, 0);
 	}
 
-	setup.origin = savedPos;
 	return original(view_render, setup, clear_flags, what_to_draw);
 }
 
@@ -744,13 +737,12 @@ void read_pixels_hook::hook(i_mat_render_context* self, int x, int y, int width,
 }
 
 void frame_stage_notify_hook::hook(chl_client* self, int frame_stage) {
-	if (GetAsyncKeyState(VK_DELETE)) {
-		get_local_player()->client_print(3, interfaces::gmod->get_map_name());
-		interfaces::gmod->run_console_command("say 123");
-		interfaces::gmod->run_console_command("say 123");
-		interfaces::gmod->run_console_command("say 123");
-	}
-	
+	enum e_frame_stage { frame_undefined = -1, frame_start = 0, frame_render_start = 5, frame_render_end = 6 };
+
+
+	if (interfaces::input->m_fCameraInThirdPerson && get_local_player() && get_local_player()->is_alive() && interfaces
+		::engine->is_in_game())
+		interfaces::prediction->set_local_view_angles(viewangles1);
 	return original(self, frame_stage);
 }
 
