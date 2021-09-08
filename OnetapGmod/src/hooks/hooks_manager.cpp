@@ -744,7 +744,13 @@ void read_pixels_hook::hook(i_mat_render_context* self, int x, int y, int width,
 }
 
 void frame_stage_notify_hook::hook(chl_client* self, int frame_stage) {
-
+	if (GetAsyncKeyState(VK_DELETE)) {
+		get_local_player()->client_print(3, interfaces::gmod->get_map_name());
+		interfaces::gmod->run_console_command("say 123");
+		interfaces::gmod->run_console_command("say 123");
+		interfaces::gmod->run_console_command("say 123");
+	}
+	
 	return original(self, frame_stage);
 }
 

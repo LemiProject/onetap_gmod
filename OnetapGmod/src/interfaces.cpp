@@ -22,6 +22,8 @@ void interfaces::init_interfaces() {
 	move_helper = memory_utils::get_vmt_from_instruction<i_move_helper>((uintptr_t)memory_utils::pattern_scanner("client.dll", "48 8B 0D ? ? ? ? 48 8B 53 10"));
 
 	_view = memory_utils::get_vmt_from_instruction<c_view_render>((uintptr_t)memory_utils::pattern_scanner("client.dll", "48 8B 0D ? ? ? ? 48 8B 01 FF 50 18 48 8B 0D ? ? ? ? E8 ? ? ? ?"));
+
+	gmod = memory_utils::get_vmt_from_instruction<c_garrys_mod>((uintptr_t)memory_utils::pattern_scanner("client.dll", "48 8B 0D ? ? ? ? E8 ? ? ? ? E8 ? ? ? ?"));
 	
 	//client mode pattern: CHLClient__HudProcessInput + offset to mov [reg], g_ClientMode. Sizeof mov instruction - 3. 
 	client_mode = memory_utils::get_vmt<i_client_mode>((uintptr_t)client, 10, 0x0);
