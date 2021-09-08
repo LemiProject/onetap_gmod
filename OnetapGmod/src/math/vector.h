@@ -25,7 +25,6 @@ public:
 
 	void normalize();
 	void clamp();
-
 	void invert();
 	
 	float length() const;

@@ -1267,13 +1267,13 @@ void main_window::draw_main_window() {
 					slider_int("Thirdperson Distance", &settings::get_int("third_person_distance"), 0, 180, NULL, NULL);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 
-					slider_int("Free cam speed", &settings::get_int("freecam_speed"), 0, 10, NULL, NULL);
+					slider_int("Debug speed", &settings::get_int("freecam_speed"), 0, 10, NULL, NULL);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
 
 					Hotkey("Thirdperson Key", &settings::get_int("third_person_key"));
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15);
 
-					Hotkey("Free cam Key", &settings::get_int("freecam_key"));	
+					Hotkey("Debug Key", &settings::get_int("freecam_key"));	
 				}
 				else if (selectedsubtab == 1)
 				{

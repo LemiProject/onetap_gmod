@@ -106,6 +106,11 @@ namespace math
 		return c_vector(cos(radx) * cos(rady), cos(radx) * sin(rady), sin(radx));
 	}
 
+	inline c_vector side_vector(const q_angle& ang)
+	{
+		return c_vector(std::cos(deg2rad(ang.y + 90.f)), std::sin(deg2rad(ang.y + 90.f)), 0.f);
+	}
+
 	inline void angle_to_vector(const q_angle& ang, c_vector& vector)
 	{
 		float sp, sy, cp, cy;
