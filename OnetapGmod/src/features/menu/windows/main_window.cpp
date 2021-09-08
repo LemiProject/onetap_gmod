@@ -1132,8 +1132,8 @@ void main_window::draw_main_window() {
 					static const char* pitch[]{ "None", "Up","Down", "Emotional" };
 					static const char* yaw[]{ "None", "Forward","Backward" };
 					checkbox("Fix movement", &settings::get_bool("fixmovement"));
-					combo("AntiAim pitch", &settings::get_int("rage_antiaim_pitch"), pitch, IM_ARRAYSIZE(pitch));
-					combo("AntiAim yaw", &settings::get_int("rage_antiaim_yaw"), yaw, IM_ARRAYSIZE(yaw));
+					combo("Pitch", &settings::get_int("rage_antiaim_pitch"), pitch, IM_ARRAYSIZE(pitch));
+					combo("Yaw", &settings::get_int("rage_antiaim_yaw"), yaw, IM_ARRAYSIZE(yaw));
 				
 				}
 			}
@@ -1267,13 +1267,13 @@ void main_window::draw_main_window() {
 					slider_int("Thirdperson Distance", &settings::get_int("third_person_distance"), 0, 180, NULL, NULL);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 
-					slider_int("Debug speed", &settings::get_int("freecam_speed"), 0, 10, NULL, NULL);
+					slider_int("Debug camera speed", &settings::get_int("freecam_speed"), 0, 10, NULL, NULL);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
 
 					Hotkey("Thirdperson Key", &settings::get_int("third_person_key"));
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15);
 
-					Hotkey("Debug Key", &settings::get_int("freecam_key"));	
+					Hotkey("Debug camera Key", &settings::get_int("freecam_key"));	
 				}
 				else if (selectedsubtab == 1)
 				{
