@@ -1123,6 +1123,7 @@ void main_window::draw_main_window() {
 				if (!selectedsubtab)
 				{
 					checkbox("Fakeduck", &settings::get_bool("fake_duck"));
+					checkbox("Fakelag", & settings::get_bool("fake_lags"));
 					Hotkey("Fakeduck key", &settings::get_int("fake_duck_key"));
 					
 					slider_int("Fakelags", &settings::get_int("fake_lags_amount"), 0, 16, "%d", 0);
@@ -1141,10 +1142,17 @@ void main_window::draw_main_window() {
 			if (selectedtab == 1) {
 				if (selectedsubtab == 0 && selectedcategory == 0) { //general
 					checkbox("Enable", &settings::get_bool("aim_enable"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Autofire", &settings::get_bool("aimbot_autofire"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Autopistol", &settings::get_bool("auto_pistol"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Norecoil", &settings::get_bool("norecoil"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Nospread", &settings::get_bool("nospread"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Silent", &settings::get_bool("aimbot_silent"));
+									ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 
 					int aa;
 					int bones = settings::get_int("aimbot_bones");
@@ -1163,9 +1171,13 @@ void main_window::draw_main_window() {
 						}
 						ImGui::EndCombo();
 					}
-
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
 					slider_int("Fov", &settings::get_int("aimbot_fov"), 0, 180, NULL, NULL);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 7);
 					slider_int("Smooth", &settings::get_int("aim_smooth"), 0, 100, "%d", NULL);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
+					Hotkey("Autopistol key", &settings::get_int("autopistol_key"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 26);
 					Hotkey("Aimbot key", &settings::get_int("aim_key"));
 				}
 				else if (selectedsubtab == 0 && selectedcategory == 1)
@@ -1188,7 +1200,7 @@ void main_window::draw_main_window() {
 				{
 					static const char* text[]{ "border", "corner" };
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
-					slider_float("Distance", &settings::get_float("esp_dist"), 0, 20000, NULL, NULL);
+					slider_int("Distance", &settings::get_int("esp_dist"), 0, 20000, NULL, NULL);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Box", &settings::get_bool("esp_player_enable"));
 					SameLine();
@@ -1218,7 +1230,7 @@ void main_window::draw_main_window() {
 				if (selectedsubtab == 1)
 				{
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
-					slider_float("Distance", &settings::get_float("esp_dist_ent"), 0, 20000, NULL, NULL);
+					slider_int("Distance", &settings::get_int("esp_dist_ent"), 0, 20000, NULL, NULL);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Box", &settings::get_bool("esp_entitie_enable"));
 					SameLine();
@@ -1252,28 +1264,28 @@ void main_window::draw_main_window() {
 					checkbox("Thirdperson", &settings::get_bool("third_person"));
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 
-					checkbox("Free cam", &settings::get_bool("freecam"));
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Debug camera", &settings::get_bool("freecam"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 7);
 
 					slider_int("Viewmodel fov", &settings::get_int("custom_viewmodel_fov"), 0, 180, NULL, NULL);
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 7);
 
 					slider_int("Fov of the screen", &settings::get_int("custom_fov"), 0, 180, NULL, NULL);
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 7);
 
-					slider_int("Custom Aspect ratio", &settings::get_int("custom_aspect_ratio"), 0, 180, NULL, NULL);
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					slider_int("Aspect ratio", &settings::get_int("custom_aspect_ratio"), 0, 180, NULL, NULL);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 7);
 
-					slider_int("Thirdperson Distance", &settings::get_int("third_person_distance"), 0, 180, NULL, NULL);
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					slider_int("Thirdperson distance", &settings::get_int("third_person_distance"), 0, 180, NULL, NULL);
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 7);
 
 					slider_int("Debug camera speed", &settings::get_int("freecam_speed"), 0, 10, NULL, NULL);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
 
-					Hotkey("Thirdperson Key", &settings::get_int("third_person_key"));
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 15);
+					Hotkey("Thirdperson key", &settings::get_int("third_person_key"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 26);
 
-					Hotkey("Debug camera Key", &settings::get_int("freecam_key"));	
+					Hotkey("Debug camera key", &settings::get_int("freecam_key"));	
 				}
 				else if (selectedsubtab == 1)
 				{
@@ -1497,18 +1509,19 @@ void main_window::draw_main_window() {
 					}
 					if (button("Load", ImVec2(150, 25)))
 					{
-
-						settings::load_from_file(paths);
+						if (!current_config.empty())
+							settings::load_from_file(paths);
 
 					}
 					SameLine();
 					if (button("Save", ImVec2(146, 25))) {
-
-						settings::save_to_file(paths);
+						if (!current_config.empty())
+							settings::save_to_file(paths);
 
 					}
 					if (button("Delete", ImVec2(303, 25)) && filesystem::remove(current_config)) {
-						current_config.clear();
+						if (!current_config.empty())
+							current_config.clear();
 						is_configs_loaded = false;
 					}
 

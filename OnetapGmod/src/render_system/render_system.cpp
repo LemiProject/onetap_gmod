@@ -324,7 +324,7 @@ void render_system::on_end_scene(LPDIRECT3DDEVICE9 device, uintptr_t return_addr
     ImGui::NewFrame();
 
     menu::draw_menu();
-
+    globals::drawlist = ImGui::GetWindowDrawList();
     directx_render::add_temp_to_draw_list(ImGui::GetBackgroundDrawList());
 	
     ImGui::EndFrame();

@@ -38,6 +38,7 @@ namespace globals {
 		size_t size();
 		std::vector<std::string> data();
 	};
+	inline ImDrawList* drawlist;
 	enum class e_pitch
 	{
 		none,

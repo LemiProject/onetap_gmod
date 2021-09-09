@@ -276,7 +276,7 @@ void esp::draw_esp() {
 		{
 			if (p->is_dormant() && settings::get_bool("esp_players_dormant"))
 				continue;
-			if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_float("esp_dist"))
+			if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_int("esp_dist"))
 				continue;
 				render_strings(box, p);
 				auto sid = p->get_steam_id();
@@ -302,7 +302,7 @@ void esp::draw_esp() {
 		{
 			if (p->is_dormant() && settings::get_bool("esp_entitie_dormant"))
 				continue;
-				if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_float("esp_dist_ent"))
+				if (get_local_player()->get_eye_pos().distance_to(p->get_eye_pos()) > settings::get_int("esp_dist_ent"))
 					continue;
 				box.type = settings::get_int("esp_type_ent");
 				box.colorbox = c_color(globals::colorespentity[0] * 255.f, globals::colorespentity[1] * 255.f, globals::colorespentity[2] * 255.f);

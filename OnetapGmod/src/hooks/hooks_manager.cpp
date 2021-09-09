@@ -262,13 +262,108 @@ void hooks_manager::create_hook(void* target, void* detour, void** original) {
 #endif
 	
 }
-
+//
+//std::vector<int> GetObservervators(int playerId)
+//{
+//	std::vector<int> SpectatorList;
+//
+//	c_base_player* pPlayer = (c_base_player*)interfaces::entity_list->get_client_entity(playerId);
+//
+//	if (!pPlayer)
+//		return SpectatorList;
+//
+//	if (!pPlayer->is_alive())
+//	{
+//		c_base_player* pObserverTarget = (c_base_player*)interfaces::entity_list->get_client_entity_from_handle(pPlayer->m_hObserverTarget());
+//
+//		if (!pObserverTarget)
+//			return SpectatorList;
+//
+//		pPlayer = pObserverTarget;
+//	}
+//
+//	for (int PlayerIndex = 0; PlayerIndex < interfaces::engine->get_max_clients(); PlayerIndex++)
+//	{
+//		c_base_player* pCheckPlayer = (c_base_player*)interfaces::entity_list->get_client_entity(PlayerIndex);
+//
+//		if (!pCheckPlayer)
+//			continue;
+//
+//		if (pCheckPlayer->is_dormant() || pCheckPlayer->is_alive())
+//			continue;
+//
+//		c_base_player* pObserverTarget = (c_base_player*)interfaces::entity_list->get_client_entity_from_handle(pCheckPlayer->m_hObserverTarget());
+//
+//		if (!pObserverTarget)
+//			continue;
+//
+//		if (pPlayer != pObserverTarget)
+//			continue;
+//
+//		SpectatorList.push_back(PlayerIndex);
+//	}
+//
+//	return SpectatorList;
+//}
+//void SpectatorList()
+//{
+//	/*if (!Variables.Misc.SpectatorList)
+//		return;*/
+//
+//	int specs = 0;
+//	int modes = 0;
+//	std::string spect = "";
+//	std::string mode = "";
+//	int DrawIndex = 1;
+//
+//	for (int playerId : GetObservervators(get_local_player()->get_index()))
+//	{
+//		c_base_player* pPlayer = (c_base_player*)interfaces::entity_list->get_client_entity(playerId);
+//
+//		if (playerId == get_local_player()->get_index())
+//			continue;
+//
+//		if (!pPlayer)
+//			continue;
+//
+//		player_info_t Pinfo;
+//
+//		interfaces::engine->get_player_info(playerId, &Pinfo);
+//
+//		if (Pinfo.fakeplayer)
+//			continue;
+//
+//		spect += Pinfo.name;
+//		spect += u8"\n";
+//		specs++;
+//
+//	}
+//	bool misc_Spectators = true;
+//
+//	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 1.f, 1.f));
+//	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
+//	if (ImGui::Begin("Spectator List", &aye,  ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+//	{
+//		ImGui::PopStyleVar();
+//		ImGui::PopStyleColor();
+//
+//		if (specs > 0) spect += "\n";
+//		if (modes > 0) mode += "\n";
+//		ImVec2 size = ImGui::CalcTextSize(spect.c_str());
+//		ImGui::SetWindowSize(ImVec2(200, 25 + size.y));
+//		ImGui::Text("test123");
+//		ImGui::Text(spect.c_str());
+//		DrawIndex++;
+//	}
+//	ImGui::End();
+//}
 
 long end_scene_hook::hook(IDirect3DDevice9* device) {
 	input_system::process_binds();
 
 	const auto ret = original(device);
 	render_system::on_end_scene(device, (uintptr_t)_ReturnAddress());
+//	SpectatorList();
 	return ret;
 }
 
@@ -330,11 +425,11 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 		cmd->buttons &= ~IN_FORWARD;
 		cmd->buttons &= ~IN_BACK;
 	};
-	auto anti_aim = [&]()
+	auto anti_aim = [&](c_user_cmd* ucmd)
 	{
 
 
-		if ((cmd->buttons & IN_ATTACK) || (cmd->buttons & IN_USE))
+		if ((ucmd->buttons & IN_ATTACK) || (ucmd->buttons & IN_USE))
 			return;
 
 		auto pitch_type = static_cast<globals::e_pitch>(settings::get_int("rage_antiaim_pitch"));
@@ -345,13 +440,13 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 			switch (pitch_type)
 			{
 			case globals::e_pitch::down:
-				cmd->viewangles.x = 90.f;
+				ucmd->viewangles.x = 90.f;
 				break;
 			case globals::e_pitch::emotional:
-				cmd->viewangles.x = 89.f;
+				ucmd->viewangles.x = 89.f;
 				break;
 			case globals::e_pitch::up:
-				cmd->viewangles.x = -90.f;
+				ucmd->viewangles.x = -90.f;
 				break;
 			default: break;
 			}
@@ -362,10 +457,10 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 			switch (yaw_type)
 			{
 			case globals::e_yaw::forward:
-				cmd->viewangles.y += 180.f;
+				ucmd->viewangles.y += 180.f;
 				break;
 			case globals::e_yaw::backward:
-				cmd->viewangles.y += -180.f;
+				ucmd->viewangles.y += -180.f;
 				break;
 			default: break;
 			}
@@ -467,9 +562,14 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 
 		aimbot::end_prediction();
 	}
-	viewangles1 = cmd->viewangles;
-
-	if (settings::get_bool("fixmovement")) fix_movement(old_cmd);
+	if (GetAsyncKeyState(settings::get_int("autopistol_key")) & 1)
+		cmd->buttons |= IN_ATTACK;
+	auto weapon = get_local_player()->get_active_weapon();
+	if (weapon)
+		if (settings::get_bool("auto_pistol")&&GetAsyncKeyState(settings::get_int("autopistol_key"))&1 && weapon->get_next_primary_attack() >= interfaces::global_vars->
+			curtime)
+			if (cmd->buttons & IN_ATTACK)
+				cmd->buttons &= ~IN_ATTACK;
 
 	cmd->viewangles.normalize();
 	original(interfaces::client_mode, frame_time, cmd);
@@ -502,8 +602,13 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 			}
 		}
 	}
-	anti_aim();
-	if (settings::get_bool("fake_lags")) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
+	anti_aim(cmd);
+	cmd->viewangles.clamp();
+	cmd->viewangles.normalize();
+	if (settings::get_bool("fixmovement")) fix_movement(old_cmd);
+	viewangles1 = cmd->viewangles;
+
+	if (lp->is_alive()&&settings::get_bool("fake_lags")) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
 	if (settings::get_bool("fake_duck") && GetAsyncKeyState(settings::get_int("fake_duck_key"))) {
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;
 		if (send_packets) cmd->buttons |= IN_DUCK;  else cmd->buttons &= ~IN_DUCK;
@@ -627,23 +732,30 @@ void override_view_hook::hook(i_client_mode* self, c_view_setup& view) {
 	static bool should_reset_input_state;
 	if (GetAsyncKeyState(settings::get_int("third_person_key")) & 1)
 		globals::thirdtemp = !globals::thirdtemp;
-	if (settings::get_bool("third_person") && globals::thirdtemp && !globals::panic) {
-		c_vector view_vec; math::angle_to_vector(view.angles, view_vec);
-		view_vec.invert();
+	if (settings::get_bool("third_person") && globals::thirdtemp && !globals::panic) 
+	{
+		trace_t tr;
+		ray_t ray;
+		c_trace_filter f;
+		f.pSkip = get_local_player();
 
-		trace_t tr; ray_t ray;
-		c_trace_filter f; f.pSkip = get_local_player();
+		q_angle va;
+		interfaces::engine->get_view_angles(va);
 
-		auto end_pos = view.origin + (view_vec * settings::get_int("third_person_distance"));
+		c_vector ang_pos;
+		math::angle_to_vector(va, ang_pos);
+		ang_pos *= -1; //invert
+		auto end_pos = view.origin + (ang_pos * settings::get_int("third_person_distance"));
+
 		ray.init(view.origin, end_pos);
+		interfaces::engine_trace->trace_ray(ray, MASK_SOLID, &f, &tr);
 
-		interfaces::engine_trace->trace_ray(ray, MASK_SHOT, &f, &tr);
 		
-		
-			should_reset_input_state = true;
 			interfaces::input->m_fCameraInThirdPerson = true;
+			should_reset_input_state = true;
 
 			view.origin = tr.endpos;
+			view.angles = va;
 		
 	} else if (should_reset_input_state) {
 		interfaces::input->m_fCameraInThirdPerson = false;

@@ -45,6 +45,8 @@ public:
 	NETVAR("DT_BaseEntity", "m_hOwnerEntity", get_owner_entity_handle, uintptr_t);
 	NETVAR("DT_BaseEntity", "m_iHealth", get_health, int);
 	NETVAR("DT_BaseEntity", "m_iMaxHealth", get_max_health, int);
+	NETVAR("DT_BasePlayer", "m_hObserverTarget", m_hObserverTarget, uintptr_t);
+
 
 	c_vector get_eye_pos() { return this->get_origin() + this->get_view_offset(); }
 
