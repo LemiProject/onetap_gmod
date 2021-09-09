@@ -382,6 +382,28 @@ long reset_hook::hook(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* present_p
 	return ret;
 }
 
+class send_packets_helper {
+	bool* sp;
+	bool tmp;
+public:
+	send_packets_helper(bool* sp) : sp(sp), tmp(*sp) {}
+	~send_packets_helper() {
+		*sp = tmp;
+		if (globals::game_info::chocked_packets > 21) *sp = true;
+		if (*sp) globals::game_info::chocked_packets = 0;
+		else globals::game_info::chocked_packets++;
+	}
+
+	send_packets_helper& operator=(bool v) {
+		tmp = v;
+		return *this;
+	}
+	
+	operator bool() const {
+		return tmp;
+	}
+};
+
 bool is_in_freecamera;
 q_angle viewangles1;
 bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* cmd) {
@@ -529,15 +551,14 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 		send_packets_ptr = reinterpret_cast<bool*>(cl_move + 0x62);
 		VirtualProtect(send_packets_ptr, sizeof(bool), PAGE_EXECUTE_READWRITE, &sp_protection);
 	}
+
+	send_packets_helper send_packets(send_packets_ptr);
 	
 	if (!cmd || !cmd->command_number || !interfaces::engine->is_in_game()) 
 		return original(self, frame_time, cmd);
 
 	c_user_cmd old_cmd = *cmd;
 	
-	bool& send_packets = *send_packets_ptr;
-	send_packets = (globals::game_info::chocked_packets > 21) ? true : send_packets;
-
 	auto lp = get_local_player();
 	if (!lp || !lp->is_alive()) return original(self, frame_time, cmd);
 
@@ -617,8 +638,6 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	lua_futures::run_all_code();
 
 	send_packets = (cmd->buttons & IN_ATTACK) ? true : send_packets;
-	send_packets = (globals::game_info::chocked_packets > 21) ? true : send_packets;
-	globals::game_info::chocked_packets = !send_packets ? globals::game_info::chocked_packets + 1 : 0;
 	
 	return false;
 }
