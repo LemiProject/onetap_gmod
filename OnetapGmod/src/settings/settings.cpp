@@ -23,7 +23,6 @@ internal::settings_storage_type settings_storage{
 	{"third_person", false},
 	{"third_person_key", 0},
 	{"faf", false},
-	{"fake_lags", false},
 	{"esp_player_armor",false},
 	{"fake_duck", false},
 	{"aimbot_key",0},

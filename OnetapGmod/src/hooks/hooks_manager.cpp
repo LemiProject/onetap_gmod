@@ -262,101 +262,7 @@ void hooks_manager::create_hook(void* target, void* detour, void** original) {
 #endif
 	
 }
-//
-//std::vector<int> GetObservervators(int playerId)
-//{
-//	std::vector<int> SpectatorList;
-//
-//	c_base_player* pPlayer = (c_base_player*)interfaces::entity_list->get_client_entity(playerId);
-//
-//	if (!pPlayer)
-//		return SpectatorList;
-//
-//	if (!pPlayer->is_alive())
-//	{
-//		c_base_player* pObserverTarget = (c_base_player*)interfaces::entity_list->get_client_entity_from_handle(pPlayer->m_hObserverTarget());
-//
-//		if (!pObserverTarget)
-//			return SpectatorList;
-//
-//		pPlayer = pObserverTarget;
-//	}
-//
-//	for (int PlayerIndex = 0; PlayerIndex < interfaces::engine->get_max_clients(); PlayerIndex++)
-//	{
-//		c_base_player* pCheckPlayer = (c_base_player*)interfaces::entity_list->get_client_entity(PlayerIndex);
-//
-//		if (!pCheckPlayer)
-//			continue;
-//
-//		if (pCheckPlayer->is_dormant() || pCheckPlayer->is_alive())
-//			continue;
-//
-//		c_base_player* pObserverTarget = (c_base_player*)interfaces::entity_list->get_client_entity_from_handle(pCheckPlayer->m_hObserverTarget());
-//
-//		if (!pObserverTarget)
-//			continue;
-//
-//		if (pPlayer != pObserverTarget)
-//			continue;
-//
-//		SpectatorList.push_back(PlayerIndex);
-//	}
-//
-//	return SpectatorList;
-//}
-//void SpectatorList()
-//{
-//	/*if (!Variables.Misc.SpectatorList)
-//		return;*/
-//
-//	int specs = 0;
-//	int modes = 0;
-//	std::string spect = "";
-//	std::string mode = "";
-//	int DrawIndex = 1;
-//
-//	for (int playerId : GetObservervators(get_local_player()->get_index()))
-//	{
-//		c_base_player* pPlayer = (c_base_player*)interfaces::entity_list->get_client_entity(playerId);
-//
-//		if (playerId == get_local_player()->get_index())
-//			continue;
-//
-//		if (!pPlayer)
-//			continue;
-//
-//		player_info_t Pinfo;
-//
-//		interfaces::engine->get_player_info(playerId, &Pinfo);
-//
-//		if (Pinfo.fakeplayer)
-//			continue;
-//
-//		spect += Pinfo.name;
-//		spect += u8"\n";
-//		specs++;
-//
-//	}
-//	bool misc_Spectators = true;
-//
-//	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 1.f, 1.f));
-//	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-//	if (ImGui::Begin("Spectator List", &aye,  ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
-//	{
-//		ImGui::PopStyleVar();
-//		ImGui::PopStyleColor();
-//
-//		if (specs > 0) spect += "\n";
-//		if (modes > 0) mode += "\n";
-//		ImVec2 size = ImGui::CalcTextSize(spect.c_str());
-//		ImGui::SetWindowSize(ImVec2(200, 25 + size.y));
-//		ImGui::Text("test123");
-//		ImGui::Text(spect.c_str());
-//		DrawIndex++;
-//	}
-//	ImGui::End();
-//}
+
 
 long end_scene_hook::hook(IDirect3DDevice9* device) {
 	input_system::process_binds();
@@ -629,7 +535,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 	if (settings::get_bool("fixmovement")) fix_movement(old_cmd);
 	viewangles1 = cmd->viewangles;
 
-	if (lp->is_alive()&&settings::get_bool("fake_lags")) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
+	if (lp->is_alive()&& settings::get_int("fake_lags_amount")>0) send_packets = !(globals::game_info::chocked_packets < settings::get_int("fake_lags_amount"));
 	if (settings::get_bool("fake_duck") && GetAsyncKeyState(settings::get_int("fake_duck_key"))) {
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;
 		if (send_packets) cmd->buttons |= IN_DUCK;  else cmd->buttons &= ~IN_DUCK;

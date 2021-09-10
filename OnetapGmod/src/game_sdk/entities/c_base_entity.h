@@ -45,7 +45,6 @@ public:
 	NETVAR("DT_BaseEntity", "m_hOwnerEntity", get_owner_entity_handle, uintptr_t);
 	NETVAR("DT_BaseEntity", "m_iHealth", get_health, int);
 	NETVAR("DT_BaseEntity", "m_iMaxHealth", get_max_health, int);
-	NETVAR("DT_BasePlayer", "m_hObserverTarget", m_hObserverTarget, uintptr_t);
 
 
 	c_vector get_eye_pos() { return this->get_origin() + this->get_view_offset(); }
@@ -83,7 +82,7 @@ public:
 		using original_fn = bool(__fastcall*)(void*);
 		return (*(original_fn**)this)[130](this);
 	}
-
+	
 	void push_entity() //https://imgur.com/bK6cNdu
 	{
 		using original_fn = void(__fastcall*)(void*);

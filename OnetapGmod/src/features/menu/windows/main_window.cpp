@@ -985,6 +985,7 @@ void read_file(std::string& out, const std::string& path)
 
 	out = file_content;
 }
+
 void main_window::draw_main_window() {
 	auto flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	auto aaa = render_system::get_device();
@@ -994,6 +995,7 @@ void main_window::draw_main_window() {
 	if (tImage == nullptr)D3DXCreateTextureFromFileInMemoryEx(aaa
 		, &NameArry, sizeof(NameArry),
 		130, 30, D3DX_DEFAULT, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tImage);
+
 	ImGui::SetNextWindowSize({ 545.000000f,470.000000f });
 
 	ImGui::Begin("Edited", nullptr, flags);
@@ -1123,7 +1125,6 @@ void main_window::draw_main_window() {
 				if (!selectedsubtab)
 				{
 					checkbox("Fakeduck", &settings::get_bool("fake_duck"));
-					checkbox("Fakelag", & settings::get_bool("fake_lags"));
 					Hotkey("Fakeduck key", &settings::get_int("fake_duck_key"));
 					
 					slider_int("Fakelags", &settings::get_int("fake_lags_amount"), 0, 16, "%d", 0);
@@ -1171,7 +1172,6 @@ void main_window::draw_main_window() {
 						}
 						ImGui::EndCombo();
 					}
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
 					slider_int("Fov", &settings::get_int("aimbot_fov"), 0, 180, NULL, NULL);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 7);
 					slider_int("Smooth", &settings::get_int("aim_smooth"), 0, 100, "%d", NULL);
@@ -1440,6 +1440,8 @@ void main_window::draw_main_window() {
 					Hotkey("Panic", &settings::get_var<int>("panic_key"));
 					if (button("Unload", ImVec2(303, 25)))
 						globals::unload = true;
+				/*	if (button("Spec", ImVec2(303, 25)))
+						globals::speclist = !globals::speclist;*/
 				}
 
 				if (selectedsubtab == 0) {
