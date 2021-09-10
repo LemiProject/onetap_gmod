@@ -51,7 +51,7 @@ void glua_loader_window::draw_glua_loader_window(bool& draw_glua_loader) {
 	}
 
 	if (draw_glua_loader || alpha > 0.f) {
-		BeginApplyAlpha(alpha);
+		//BeginApplyAlpha(alpha);
 		Begin(u8"Glua##LUA_EXECUTOR_WINDOW");
 
 		text_editor.Render("##LUA_EXECUTOR", calc_text_editor_size());

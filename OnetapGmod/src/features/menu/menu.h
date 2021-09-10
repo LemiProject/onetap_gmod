@@ -9,5 +9,4 @@ namespace menu {
 	void set_open_state(bool state);
 	void toggle_menu();
 
-	inline float menu_alpha = 0.f;
 }

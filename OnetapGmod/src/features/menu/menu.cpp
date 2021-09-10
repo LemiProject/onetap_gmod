@@ -30,12 +30,8 @@ void menu::draw_menu() {
 		if (!interfaces::surface->is_cursor_visible())
 			ImGui::GetIO().MouseDrawCursor = true;
 
-		if (is_menu_open)
-			menu_alpha = ImMin(menu_alpha + animation_add(), 1.f);
-		else
-			menu_alpha = ImMax(menu_alpha - animation_add(), 0.f);
-		
-		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, menu_alpha);
+	
+		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 1.0f);
 
 		//background_window::draw_background_window();
 		
@@ -50,12 +46,11 @@ void menu::draw_menu() {
 }
 
 bool menu::menu_is_open() {
-	return is_menu_open || menu_alpha > 0.f;
+	return is_menu_open;
 }
 
 void menu::set_open_state(bool state) {
 	is_menu_open = state;
-	menu_alpha = state ? 1.f : 0.f;
 }
 
 void menu::toggle_menu() {

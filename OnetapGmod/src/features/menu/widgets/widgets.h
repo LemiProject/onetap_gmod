@@ -16,7 +16,7 @@ namespace ImGui {
 	IMGUI_API void WittchenSlider(const std::string& name, float* var, const ImVec2& minmax);
 	IMGUI_API void WittchenSlider(const std::string& name, int* var, const ImVec2& minmax);
 	
-	IMGUI_API void BeginApplyAlpha(float alpha);
+	//IMGUI_API void BeginApplyAlpha(float alpha);
 	IMGUI_API void EndApplyAlpha();
 
 	IMGUI_API bool ColorsEdit4(const std::string& str_id, c_color& color, ImGuiColorEditFlags flags);

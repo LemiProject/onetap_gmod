@@ -126,10 +126,10 @@ void ImGui::WittchenSlider(const std::string& name, int* var, const ImVec2& minm
 	}
 }
 
-void ImGui::BeginApplyAlpha(float alpha) {
-	alpha = menu::menu_alpha == 1.f ? alpha : menu::menu_alpha;
-	PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-}
+//void ImGui::BeginApplyAlpha(float alpha) {
+//	alpha = menu::menu_alpha == 1.f ? alpha : menu::menu_alpha;
+//	PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+//}
 
 void ImGui::EndApplyAlpha() {
 	PopStyleVar();
