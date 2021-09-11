@@ -21,6 +21,7 @@
 #include <d3d9helper.h>
 
 #include "fontawesomium.h"
+#include "../settings/settings.h"
 
 IDirect3DDevice9* game_device;
 bool render_system_initialized = false;
@@ -87,37 +88,40 @@ IDirect3DVertexBuffer9* v_buffer = NULL;
 struct CUSTOMVERTEX {
     FLOAT x, y, z, rhw, u, v;
 };
-//
-//void SpectatorList()
-//{
-//    if (!globals::speclist || !get_local_player() || !get_local_player()->is_alive())
-//        return;
-//
-//    ImGui::SetNextWindowSize(ImVec2(200.f, 200.f));
-//    ImGui::Begin("Spectators window", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-//    {
-//        std::string names = "";
-//        for (int i = 0; i < interfaces::entity_list->get_highest_entity_index(); i++)
-//        {
-//            auto entity = get_player_by_index(i);
-//            if (entity == nullptr || !entity->is_player() || entity == get_local_player()) 
-//                continue;
-//            if (entity->get_observer_target() != get_local_player())
-//                continue;
-//
-//            player_info_s info;
-//            interfaces::engine->get_player_info(i, &info);
-//
-//            names += std::string(info.name) + "\n";
-//        }
-//        ImGui::GetStyle().ItemSpacing = ImVec2(4, 2);
-//        ImGui::GetStyle().WindowPadding = ImVec2(4, 4);
-//        ImGui::SameLine(15.f);
-//        ImGui::Text(names.c_str());
-//
-//    }
-//    ImGui::End();
-//}
+
+void spec_list()
+{
+    if (!settings::get_bool("visual_spec") || !get_local_player() || !get_local_player()->is_alive())
+        return;
+    ImGui::SetNextWindowSize(ImVec2(200.f, 200.f));
+    ImGui::Begin("spec_list", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTitleBar);
+    {
+        std::string names = "";
+        static int number_spec;
+        for (int i = 0; i < interfaces::entity_list->get_highest_entity_index(); i++)
+        {
+            auto ent = (c_base_player*)interfaces::entity_list->get_client_entity(i);
+            if (ent == nullptr || !ent->is_player() || ent == get_local_player())
+                continue;
+            if (ent->get_observer_target() != get_local_player())
+                continue;
+            number_spec = interfaces::entity_list->get_highest_entity_index();
+
+            names += ent->get_name() + "\n";
+        }
+
+        auto menu_size = ImGui::GetItemRectSize();
+        auto text = std::string(
+            "Spectators:\n" + names);
+        auto text_size = ImGui::CalcTextSize(text.c_str());
+        auto pos = ImVec2{
+            ImGui::GetIO().DisplaySize.x - text_size.x - ImGui::GetStyle().WindowPadding.x,
+            menu_size.y };
+        ImGui::Text(text.c_str());
+    }
+    ImGui::End();
+ 
+}
 void render_system::on_end_scene(LPDIRECT3DDEVICE9 device, uintptr_t return_address) {
     static uintptr_t game_overlay_return_address = 0;
 	
@@ -355,7 +359,7 @@ void render_system::on_end_scene(LPDIRECT3DDEVICE9 device, uintptr_t return_addr
     ImGui::NewFrame();
 
     menu::draw_menu();
-   // SpectatorList();
+    spec_list();
     directx_render::add_temp_to_draw_list(ImGui::GetBackgroundDrawList());
 	
     ImGui::EndFrame();

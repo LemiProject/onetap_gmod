@@ -1087,6 +1087,8 @@ void main_window::draw_main_window() {
 					selectedsubtab = 0;
 			}
 			if (selectedtab == 2) {
+				if (subtab("General", selectedsubtab == 2))
+					selectedsubtab = 2;
 				if (subtab("Players", selectedsubtab == 0))
 					selectedsubtab = 0;
 				if (subtab("Entities", selectedsubtab == 1))
@@ -1196,6 +1198,10 @@ void main_window::draw_main_window() {
 			}
 			else if (selectedtab == 2)
 			{
+				if (selectedsubtab == 2)
+				{
+					checkbox("Spectator list", &settings::get_bool("visual_spec"));		
+				}
 				if (selectedsubtab == 0)
 				{
 					static const char* text[]{ "border", "corner" };

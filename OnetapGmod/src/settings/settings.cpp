@@ -22,6 +22,7 @@ internal::settings_storage_type settings_storage{
 	{"fixmovement", false},
 	{"third_person", false},
 	{"third_person_key", 0},
+	{"visual_spec",false},
 	{"faf", false},
 	{"esp_player_armor",false},
 	{"fake_duck", false},
