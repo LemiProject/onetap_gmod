@@ -31,7 +31,7 @@ class c_base_player : public c_base_entity {
 public:
 	NETVAR("DT_BasePlayer", "m_fFlags", get_flags, int);
 	NETVAR("DT_BasePlayer", "m_vecViewOffset[0]", get_view_offset, c_vector);
-	NETVAR("DT_BasePlayer", "m_hActiveWeapon", active_weapon_handle, uintptr_t);
+	NETVAR("DT_BasePlayer", "m_hActiveWeapon", active_weapon_handle, int*);
 	NETVAR("DT_BasePlayer", "m_vecVelocity[0]", get_velocity, c_vector);
 	NETVAR("DT_BasePlayer", "hMyWeapons", get_weapons, uintptr_t);
 	NETVAR("DT_BasePlayer", "m_bloodColor", get_blood_color, c_vector);
@@ -250,6 +250,14 @@ public:
 			f = (fn)memory_utils::pattern_scanner("client.dll", "40 53 48 83 EC 20 48 3B 0D ? ? ? ?");
 		}
 		return f(this);
+	}
+
+	c_base_player* get_observer_target() {
+		using fn = void* (__fastcall*)(void*);
+		static fn f;
+		if (!f)
+			f = (fn)memory_utils::pattern_scanner("client.dll", "40 53 48 83 EC 20 48 39 0D ? ? ? ? 48 8B D9 75 26");
+		return (c_base_player*)f(this);
 	}
 };
 
