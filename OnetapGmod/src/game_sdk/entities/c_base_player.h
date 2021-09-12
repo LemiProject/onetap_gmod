@@ -234,15 +234,6 @@ public:
 		return lua->get_string();
 	}
 
-	void client_print(int type, const std::string& msg) {
-		using fn = void(__fastcall*)(void*, int, const char*);
-		static fn f;
-		if (!f) {
-			f = (fn)memory_utils::pattern_scanner("client.dll", "4D 85 C0 0F 84 ? ? ? ? 48 89 5C 24 ? 57");
-		}
-		f(this, type, msg.c_str());
-	}
-
 	c_base_combat_weapon* get_active_weapon() {
 		using fn = c_base_combat_weapon * (__fastcall*)(void*);
 		static fn f;
@@ -263,6 +254,14 @@ public:
 
 class c_local_player : public c_base_player {
 public:
+	void client_print(int type, const std::string& msg) {
+		using fn = void(__fastcall*)(void*, int, const char*);
+		static fn f;
+		if (!f) {
+			f = (fn)memory_utils::pattern_scanner("client.dll", "4D 85 C0 0F 84 ? ? ? ? 48 89 5C 24 ? 57");
+		}
+		f(this, type, msg.c_str());
+	}
 };
 
 __forceinline c_local_player* get_local_player()

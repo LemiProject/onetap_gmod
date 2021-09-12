@@ -38,7 +38,7 @@ public:
 	/*33*/	virtual bool is_key_board_input_enabled(i_panel* panel) = 0;
 	/*34*/	virtual void* is_mouse_input_enabled(unsigned int) = 0;
 	/*35*/	virtual void* solve(unsigned int) = 0;
-	/*36*/	virtual const char* get_name(void*) = 0;
+	/*36*/	virtual const char* get_name(uint64_t) = 0;
 	/*37*/	virtual const char* get_class_name(unsigned int) = 0;
 	/*38*/	virtual void* send_message(unsigned int, void*, unsigned int) = 0;
 	/*39*/	virtual void* think(unsigned int) = 0;
