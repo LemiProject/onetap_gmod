@@ -12,6 +12,7 @@ namespace draw_types
 	{
 		virtual ~draw_data_t() = default;
 		virtual void draw(ImDrawList* list) = 0;
+
 	};
 
 	struct rect_draw_type_t final : public draw_data_t

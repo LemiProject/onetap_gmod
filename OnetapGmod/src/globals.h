@@ -7,9 +7,11 @@
 #include "game_sdk/misc/usercmd.h"
 #include <mutex>
 #include <vector>
-
+#include "../include/color.h"
 #include "json.hpp"
-
+#include "render_system/render_system.h"
+#include <color.h>
+#include "game_sdk/entities/c_base_player.h"
 namespace globals {
 	inline HINSTANCE dllInstance;
 
@@ -17,10 +19,19 @@ namespace globals {
 		inline c_view_setup view_setup;
 		inline c_view_setup proof_view_setup;
 		inline int chocked_packets;
+
 	}
 	inline q_angle lastview;
 	inline std::vector<std::string> friends;
 	inline std::vector<int> friendly_teams;
+	inline c_color local_color_team;
+	inline bool get_target;
+	struct player_t
+	{
+		c_vector pos;
+		c_color color;
+	};
+	inline std::map<std::string, player_t> player_info;
 	class c_entity_list
 	{
 		std::vector<std::string> classes;
@@ -51,6 +62,8 @@ namespace globals {
 		forward,
 		backward,
 	};
+	
+	
 	inline c_entity_list entitys_to_draw;
 	inline bool unload;
 	inline bool aimbotenable;

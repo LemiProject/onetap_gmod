@@ -60,9 +60,9 @@ void menu_themes::standard_theme() {
 	colors[ImGuiCol_FrameBg] = ImVec4(0.430000f, 0.430000f, 0.430000f, 0.390000f);
 	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.470000f, 0.470000f, 0.690000f, 0.400000f);
 	colors[ImGuiCol_FrameBgActive] = ImVec4(0.420000f, 0.410000f, 0.640000f, 0.690000f);
-	colors[ImGuiCol_TitleBg] = ImColor(15, 15, 20, 250);
-	colors[ImGuiCol_TitleBgActive] = ImColor(15, 15, 20, 250);
-	colors[ImGuiCol_TitleBgCollapsed] = ImColor(15, 15, 20, 250);
+	colors[ImGuiCol_TitleBg] = ImColor(249, 165, 22, 255);
+	colors[ImGuiCol_TitleBgActive] = ImColor(249, 165, 22, 255);
+	colors[ImGuiCol_TitleBgCollapsed] = ImColor(249, 165, 22, 255);
 	colors[ImGuiCol_MenuBarBg] = ImVec4(0.400000f, 0.400000f, 0.550000f, 0.800000f);
 	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.200000f, 0.250000f, 0.300000f, 0.600000f);
 	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.400000f, 0.400000f, 0.800000f, 0.300000f);

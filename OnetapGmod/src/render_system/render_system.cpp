@@ -6,7 +6,7 @@
 #include <imgui/imgui_internal.h>
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_impl_dx9.h>
-
+#include "../game_sdk/entities/c_base_player.h"
 #include "render_helpers.h"
 #include "imgui/imgui_freetype.h"
 #include "../features/menu/menu.h"
@@ -22,6 +22,7 @@
 
 #include "fontawesomium.h"
 #include "../settings/settings.h"
+#include "../utils/game_utils.h"
 
 IDirect3DDevice9* game_device;
 bool render_system_initialized = false;
@@ -88,16 +89,123 @@ IDirect3DVertexBuffer9* v_buffer = NULL;
 struct CUSTOMVERTEX {
     FLOAT x, y, z, rhw, u, v;
 };
+ImVec2 RotatePoint(c_vector EntityPos, c_vector LocalPlayerPos, int posX, int posY, int sizeX, int sizeY, float angle, float zoom, bool* viewCheck, bool angleInRadians = false)
+{
+    float r_1, r_2;
+    float x_1, y_1;
+    r_1 = -(EntityPos.y - LocalPlayerPos.y);
+    r_2 = EntityPos.x - LocalPlayerPos.x;
+    float Yaw = angle - 90.0f;
+    float yawToRadian = Yaw * (float)(math::PI_F / 180.0F);
+    x_1 = (float)(r_2 * (float)cos((double)(yawToRadian)) - r_1 * sin((double)(yawToRadian))) / 20;
+    y_1 = (float)(r_2 * (float)sin((double)(yawToRadian)) + r_1 * cos((double)(yawToRadian))) / 20;
+    *viewCheck = y_1 < 0;
+    x_1 *= zoom;
+    y_1 *= zoom;
+    int sizX = sizeX / 2;
+    int sizY = sizeY / 2;
+    x_1 += sizX;
+    y_1 += sizY;
+    if (x_1 < 5)
+        x_1 = 5;
+    if (x_1 > sizeX - 5)
+        x_1 = sizeX - 5;
+    if (y_1 < 5)
+        y_1 = 5;
+    if (y_1 > sizeY - 5)
+        y_1 = sizeY - 5;
+    x_1 += posX;
+    y_1 += posY;
+    return ImVec2(x_1, y_1);
+}
+void draw_radar() {
+    if (globals::panic)
+        return;
+    if (!settings::get_bool("vis_radar"))
+        return;
+    if (!interfaces::engine->is_in_game())
+        return;
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImVec2 oldPadding = style.WindowPadding;
+    float oldAlpha = style.Colors[ImGuiCol_WindowBg].w;
+    style.WindowPadding = ImVec2(0, 0);
 
+    //style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
+    //style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    ImGui::SetNextWindowSize(ImVec2(200.f, 200.f));
+    if (ImGui::Begin("Radar", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar))
+        //if (ImGui::Begin("Radar", &_visible, ImVec2(200, 200)), ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize)
+    {
+
+        ImVec2 siz = ImGui::GetWindowSize();
+        ImVec2 pos = ImGui::GetWindowPos();
+
+        ImDrawList* windowDrawList = ImGui::GetWindowDrawList();
+        windowDrawList->AddRectFilled(ImVec2(pos.x + 0, pos.y + 7), ImVec2(pos.x + 200, pos.y + 200), ImColor(33, 33, 38, 255), 0, 15);
+        windowDrawList->AddLine(ImVec2(pos.x + (siz.x / 2), pos.y + 12), ImVec2(pos.x + (siz.x / 2), (pos.y + siz.y)-12), ImColor(79, 77, 82, 255), 1.5f);
+        windowDrawList->AddLine(ImVec2(pos.x + 12, pos.y + (siz.y / 2)), ImVec2((pos.x + siz.x)-12, pos.y + (siz.y / 2)), ImColor(79, 77, 82, 255), 1.5f);
+
+
+        
+
+
+        if (get_local_player()) {
+            c_vector LocalPos = get_local_player()->get_eye_pos();
+            q_angle ang;
+            interfaces::engine->get_view_angles(ang);
+
+            for (auto [id, team] : globals::player_info)
+            {
+
+                bool aye = false;
+                auto EntityPos = RotatePoint(team.pos, LocalPos, pos.x, pos.y, siz.x, siz.y, ang.y,2, &aye);
+                ImColor friendcolor = ImColor(globals::colorfriend[0], globals::colorfriend[1], globals::colorfriend[2], globals::colorfriend[3]);
+                auto sid = id;
+                if (!sid.empty())
+                {
+                    ImColor profcolor;
+                    // auto aye = ent->get_team_color();
+                     //ImU32 clr = (bIsEnemy ? (isVisibled ? Color::LightGreen() : Color::Blue()) : Color::White()).GetU32();
+
+                    ImColor clr = (std::find(globals::friends.begin(), globals::friends.end(), sid) != globals::friends.end()) ? friendcolor : ImColor(team.color.get_vec4());
+
+                    int s = 4;
+                    windowDrawList->AddCircleFilled(ImVec2(EntityPos.x, EntityPos.y), s, clr);
+
+                }
+            }
+        }
+        windowDrawList->AddCircleFilled(ImVec2(pos.x + (siz.x / 2), pos.y + (siz.y / 2)), 4, ImColor(255,255,255));
+      //  windowDrawList->AddRectFilled(ImVec2(pos.x + 0, pos.y + 0), ImVec2(pos.x + 200, pos.y + 12), ImColor(33, 33, 38, 255), 0, 15);
+        windowDrawList->AddRectFilled(ImVec2(pos.x + 0, pos.y + 0), ImVec2(pos.x + 200, pos.y + 7), ImColor(249, 165, 22, 255), 6, 15);
+       // windowDrawList->AddRectFilled(ImVec2(pos.x + 0, pos.y + 7), ImVec2(pos.x + 545, p.y + 464), ImColor(33, 33, 38, 255), 0, 15);
+        ImGui::SetCursorPosY(7);
+        ImGui::Text("\xef\x8f\x85 Radar");
+    }
+    ImGui::End();
+    style.WindowPadding = oldPadding;
+    style.Colors[ImGuiCol_WindowBg].w = oldAlpha;
+
+}
 void spec_list()
 {
-    if (!settings::get_bool("visual_spec") || !get_local_player() || !get_local_player()->is_alive())
+    if (globals::panic)
+        return;
+    if (!interfaces::engine->is_in_game()&& !interfaces::engine->is_drawing_loading_image())
+       return;
+    if (!settings::get_bool("visual_spec"))
+        return;
+    if (!get_local_player() || !get_local_player()->is_alive())
         return;
     ImGui::SetNextWindowSize(ImVec2(200.f, 200.f));
-    ImGui::Begin("spec_list", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTitleBar);
-    {
+    std::string spectators;
+    ImGui::Begin("spec_list", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse|ImGuiWindowFlags_NoTitleBar);
+    {   auto p = ImGui::GetWindowPos();
+        auto draw = ImGui::GetWindowDrawList();
+        draw->AddRectFilled(ImVec2(p.x + 0, p.y+7), ImVec2(p.x + 200, p.y + 200), ImColor(33, 33, 38, 255), 0, 15);
+        draw->AddRectFilled(ImVec2(p.x + 0, p.y + 0), ImVec2(p.x + 200, p.y + 7), ImColor(249, 165, 22, 255), 6, 15);
+     //   draw->AddRectFilled(ImVec2(p.x + 0, p.y + 12), ImVec2(p.x + 200, p.y + 13), ImColor(33, 33, 38, 255), 0, 15);
         std::string names = "";
-        static int number_spec;
         for (int i = 0; i < interfaces::entity_list->get_highest_entity_index(); i++)
         {
             auto ent = (c_base_player*)interfaces::entity_list->get_client_entity(i);
@@ -105,22 +213,13 @@ void spec_list()
                 continue;
             if (ent->get_observer_target() != get_local_player())
                 continue;
-            number_spec = interfaces::entity_list->get_highest_entity_index();
 
-            names += ent->get_name() + "\n";
-        }
-
-        auto menu_size = ImGui::GetItemRectSize();
-        auto text = std::string(
-            "Spectators:\n" + names);
-        auto text_size = ImGui::CalcTextSize(text.c_str());
-        auto pos = ImVec2{
-            ImGui::GetIO().DisplaySize.x - text_size.x - ImGui::GetStyle().WindowPadding.x,
-            menu_size.y };
-        ImGui::Text(text.c_str());
+            names +=  ent->get_name() + "\n";
+        } 
+        ImGui::SetCursorPosY(7);
+        ImGui::Text(("\xef\x81\xae\ Spectators list\n"+names).c_str());
     }
     ImGui::End();
- 
 }
 void render_system::on_end_scene(LPDIRECT3DDEVICE9 device, uintptr_t return_address) {
     static uintptr_t game_overlay_return_address = 0;
@@ -135,8 +234,9 @@ void render_system::on_end_scene(LPDIRECT3DDEVICE9 device, uintptr_t return_addr
     	char mn[MAX_PATH]; GetModuleFileName((HMODULE)mi.AllocationBase, mn, MAX_PATH);
         if (std::string(mn).find("gameoverlay") != std::string::npos) game_overlay_return_address = return_address;
     }
-   // if (game_overlay_return_address != (uintptr_t)return_address && settings::states["other::anti_obs"])
-       // return;
+    if (game_overlay_return_address != (uintptr_t)return_address && settings::get_bool("anti_obs"))
+        return;
+  //  interfaces::render_context->set_render_target(render_target);
 
     device->SetRenderTarget(0, 0);
    // interfaces::mat_render_context->set_render_target(0);
@@ -357,9 +457,9 @@ void render_system::on_end_scene(LPDIRECT3DDEVICE9 device, uintptr_t return_addr
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
-
-    menu::draw_menu();
     spec_list();
+    draw_radar();
+    menu::draw_menu();
     directx_render::add_temp_to_draw_list(ImGui::GetBackgroundDrawList());
 	
     ImGui::EndFrame();

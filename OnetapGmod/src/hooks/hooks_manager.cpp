@@ -133,9 +133,9 @@ struct run_command_hook {
 struct paint_traverse_hook {
 	static inline constexpr uint32_t idx = 41;
 
-	using fn = void(__fastcall*)(i_panel*, void*, bool, bool);
+	using fn = void(__fastcall*)(i_panel*, uint64_t, bool, bool);
 	static inline fn original = nullptr;
-	static auto __fastcall hook(i_panel* self, void* panel, bool force_repaint, bool allow_force) -> void;
+	static auto __fastcall hook(i_panel* self, uint64_t panel, bool force_repaint, bool allow_force) -> void;
 };
 
 struct override_view_hook {
@@ -489,7 +489,7 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 
 		aimbot::end_prediction();
 	}
-	if (GetAsyncKeyState(settings::get_int("autopistol_key")) & 1)
+	if (GetAsyncKeyState(settings::get_int("autopistol_key")) & 1 && settings::get_bool("auto_pistol"))
 		cmd->buttons |= IN_ATTACK;
 	auto weapon = get_local_player()->get_active_weapon();
 	if (weapon)
@@ -497,7 +497,11 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 			curtime)
 			if (cmd->buttons & IN_ATTACK)
 				cmd->buttons &= ~IN_ATTACK;
-
+	if (weapon)
+	if (settings::get_bool("aimbot_rapidfire") && weapon->get_next_primary_attack() >= interfaces::global_vars->
+		curtime)
+		if (cmd->buttons & IN_ATTACK)
+			cmd->buttons &= ~IN_ATTACK;
 	cmd->viewangles.normalize();
 	original(interfaces::client_mode, frame_time, cmd);
 
@@ -540,9 +544,11 @@ bool create_move_hook::hook(i_client_mode* self, float frame_time, c_user_cmd* c
 		send_packets = globals::game_info::chocked_packets >= 9 ? true : false;
 		if (send_packets) cmd->buttons |= IN_DUCK;  else cmd->buttons &= ~IN_DUCK;
 	}
+	globals::local_color_team = get_local_player()->get_team_color();
 	main_window::update_entity_list();
+	main_window::update_radar();
 	lua_futures::run_all_code();
-
+	
 	send_packets = (cmd->buttons & IN_ATTACK) ? true : send_packets;
 	
 	return false;
@@ -606,7 +612,7 @@ void run_command_hook::hook(i_prediction* pred, c_base_entity* player, c_user_cm
 	interfaces::engine->set_view_angles(va);
 }
 
-auto paint_traverse_hook::hook(i_panel* self, void* panel, bool force_repaint, bool allow_force) -> void {
+auto paint_traverse_hook::hook(i_panel* self, uint64_t panel, bool force_repaint, bool allow_force) -> void {
 	original(self, panel, force_repaint, allow_force);
 
 	if (const std::string panel_name = interfaces::panel->get_name(panel); panel_name == "FocusOverlayPanel") {

@@ -29,6 +29,11 @@ internal::settings_storage_type settings_storage{
 	{"aimbot_key",0},
 	{"rage_antiaim_yaw",0},
 	{"rage_antiaim_pitch",0},
+	{"misc_spec_type",0},
+	{"aimbot_rapidfire",false},
+	{"anti_obs",false},
+
+	{"vis_radar",false},
 	{"esp_type",0},
 	{"esp_type_ent",0},
 	/*{"rage_anti_aim_type_yaw",0},

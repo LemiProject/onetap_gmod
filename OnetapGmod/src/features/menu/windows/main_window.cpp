@@ -657,6 +657,8 @@ uint32_t key;
 IDirect3DTexture9* tImage = nullptr;
 auto entity_lists_update_time_stamp = 0.f;
 bool is_entlists_updating = false;
+auto radar_update_time_stamp = 0.f;
+bool is_radar_updating = false;
 globals::c_entity_list ent_list;
 // <steam_id, name>
 std::map<std::string, std::string> players_list;
@@ -685,7 +687,6 @@ inline void set_tooltip(const std::string& text, ...)
 
 void main_window::update_entity_list()
 {
-	//Update every 5 second
 	auto is_update = [&]()
 	{
 		if (entity_lists_update_time_stamp == 0.f)
@@ -693,7 +694,7 @@ void main_window::update_entity_list()
 
 		const auto current_time_stamp = interfaces::engine->get_time_stamp_from_start();
 
-		if (roundf(current_time_stamp) - roundf(entity_lists_update_time_stamp) < 5)
+		if (roundf(current_time_stamp) - roundf(entity_lists_update_time_stamp) < 0)
 			return false;
 
 		return true;
@@ -759,6 +760,56 @@ void main_window::update_entity_list()
 	}
 
 	is_entlists_updating = false;
+}
+
+void main_window::update_radar()
+{
+	//Update every 0 second
+	auto is_update = [&]()
+	{
+		if (radar_update_time_stamp == 0.f)
+			return true;
+
+		const auto current_time_stamp = interfaces::engine->get_time_stamp_from_start();
+
+		if (roundf(current_time_stamp) - roundf(radar_update_time_stamp) < 0)
+			return false;
+
+		return true;
+	};
+
+	if (!is_update())
+		return;
+
+	//just guard
+	is_radar_updating = true;
+
+	radar_update_time_stamp = interfaces::engine->get_time_stamp_from_start();
+
+	if (!interfaces::engine->is_in_game())
+		return;
+	globals::player_info.clear();
+	
+	//Add colors for radar
+	for (auto i = 0; i < interfaces::entity_list->get_highest_entity_index(); ++i)
+	{
+		auto ply = get_player_by_index(i);
+		if (!ply || !ply->is_player())
+			continue;
+		if (ply->is_dormant())
+			continue;
+		if (get_local_player()->is_equal(ply))
+			continue;
+		if (get_local_player()->get_eye_pos().distance_to(ply->get_eye_pos()) > 900)
+			continue;
+		auto sid = ply->get_steam_id();
+
+
+		globals::player_t tmp{ ply->get_origin(), ply->get_team_color()};
+		globals::player_info.emplace(sid, tmp);
+
+	}
+	is_radar_updating = false;
 }
 
 bool ColorEdit44(const char* label, float col[4], ImGuiColorEditFlags flags)
@@ -1148,6 +1199,8 @@ void main_window::draw_main_window() {
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Autofire", &settings::get_bool("aimbot_autofire"));
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
+					checkbox("Rapidfire", &settings::get_bool("aimbot_rapidfire"));
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Autopistol", &settings::get_bool("auto_pistol"));
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10);
 					checkbox("Norecoil", &settings::get_bool("norecoil"));
@@ -1178,9 +1231,9 @@ void main_window::draw_main_window() {
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 7);
 					slider_int("Smooth", &settings::get_int("aim_smooth"), 0, 100, "%d", NULL);
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 5);
-					Hotkey("Autopistol key", &settings::get_int("autopistol_key"));
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 26);
-					Hotkey("Aimbot key", &settings::get_int("aim_key"));
+					Hotkey("Autopistol key", &settings::get_int("autopistol_key"), { 0, 22 });
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 26.5);
+					Hotkey("Aimbot key", &settings::get_int("aim_key"), { 0, 22});
 				}
 				else if (selectedsubtab == 0 && selectedcategory == 1)
 				{
@@ -1200,7 +1253,10 @@ void main_window::draw_main_window() {
 			{
 				if (selectedsubtab == 2)
 				{
-					checkbox("Spectator list", &settings::get_bool("visual_spec"));		
+					checkbox("Spectators list", &settings::get_bool("visual_spec"));		
+					checkbox("Radar", &settings::get_bool("vis_radar"));
+					checkbox("OBS bypass", &settings::get_bool("anti_obs"));
+
 				}
 				if (selectedsubtab == 0)
 				{
